@@ -16,5 +16,5 @@
   "reset_notes": "Return every screw to its colored bin (three M3 yellow, three M4 white, three M5 green). Check the tray is clear and the request card still shows M4 x 20 mm. Nothing is consumed.",
   "fidelity": "SimReady meshes (NVIDIA CC-BY-4.0): M3 hardware_screw_m3_a02, M4 factory_bolt_m04_loose, M5 screw_high_res at near-metric scale; handoff tray dishware_plastic_tray_a01 fixed with no mass. Bins are open Box walls on the table (22x18x9 cm), fully coloured yellow/white/green. Scorer keys off start bin, not OCR. USD packages live under tasks/hand-correct-screw/assets/simready/ (gitignored).",
   "scores": "Dream-1 run: 0.0; demo: 1.0",
-  "media": "M-56WU3U"
+  "media": "M-RYXPTF"
 }
