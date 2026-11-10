@@ -2,7 +2,7 @@
 
 Instruction: `The person asks for an M4 x 20 mm Phillips pan-head machine screw. Take one screw from the bin whose front label reads M4 and place it in their open palm; then let go.`
 
-Files: `task.json`, `task.py`, `README.md`
+Files: `task.json`, `hand_correct_screw.py`, `README.md`
 
 ## Task design
 
@@ -49,7 +49,7 @@ Brev launchable: Isaac Lab-Arena, Isaac Sim, L40S. Before every shell: `source ~
 ## Offline check, no GPU
 
 ```bash
-python tasks/hand-correct-screw/task.py
+python tasks/hand-correct-screw/hand_correct_screw.py
 ```
 
 Prints a JSON report: scoring cases, plan duration, worst IK per arm.
@@ -58,7 +58,7 @@ Prints a JSON report: scoring cases, plan duration, worst IK per arm.
 
 ```bash
 inspect-robots run --embodiment yam_arena --policy dream \
-  -E task=tasks/hand-correct-screw/task.py -E object_jitter=0 -E control_hz=20 \
+  -E task=tasks/hand-correct-screw/hand_correct_screw.py -E object_jitter=0 -E control_hz=20 \
   -E cam_width=320 -E cam_height=176 \
   --instruction "The person asks for an M4 x 20 mm Phillips pan-head machine screw. Take one screw from the bin whose front label reads M4 and place it in their open palm; then let go." \
   --scorer task_score --max-steps 2400 --seed 0 --no-prompt --store-frames \
@@ -69,14 +69,14 @@ inspect-robots run --embodiment yam_arena --policy dream \
 
 ```bash
 inspect-robots run --embodiment yam_arena --policy yam_scripted \
-  -E task=tasks/hand-correct-screw/task.py -E object_jitter=0 -E control_hz=20 \
+  -E task=tasks/hand-correct-screw/hand_correct_screw.py -E object_jitter=0 -E control_hz=20 \
   -E cam_width=320 -E cam_height=176 \
   --instruction "The person asks for an M4 x 20 mm Phillips pan-head machine screw. Take one screw from the bin whose front label reads M4 and place it in their open palm; then let go." \
   --scorer task_score --max-steps 2400 --seed 0 --no-prompt --store-frames \
   --log-dir ~/yam-eval/hand-correct-screw-demo
 ```
 
-`demo()` in `task.py`: left arm places `screw_m4_1` on the palm centre; right stays clear. Requires `-E object_jitter=0`.
+`demo()` in `hand_correct_screw.py`: left arm places `screw_m4_1` on the palm centre; right stays clear. Requires `-E object_jitter=0`.
 
 ## Limits and seeds
 
