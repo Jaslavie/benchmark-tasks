@@ -376,8 +376,8 @@ def demo():
     return {"left": left, "right": right}
 
 
-def self_test(ObjectState=None):
-    """Scoring rules on hand-built states; no GPU."""
+def self_test(ObjectState=None) -> dict:
+    """Scoring rules on hand-built states; no GPU. Returns a score report per case."""
     if ObjectState is None:
         from yam_arena.task_file import ObjectState
 
@@ -394,44 +394,76 @@ def self_test(ObjectState=None):
         base.update(moved)
         return base
 
+    report = {}
+
+    # Score 0 at start
     _lifted_m4 = False
-    assert score(start_scene()) == 0.0 and not success(start_scene())
+    st = start_scene()
+    got, ok = score(st), success(st)
+    assert got == 0.0 and not ok
+    report["start"] = {"score": got, "success": ok}
 
     # Score 1.0 for one M4 alone on palm
     good = start_scene(screw_m4_1=screw("screw_m4_1", PALM_C[0], PALM_C[1], bottom=PALM_TOP))
     _lifted_m4 = False
-    assert abs(score(good) - 1.0) < 1e-9 and success(good)
+    got, ok = score(good), success(good)
+    assert abs(got - 1.0) < 1e-9 and ok
+    report["one_m4_alone"] = {"score": got, "success": ok}
 
     # Score 0 for wrong size on palm
     bad = start_scene(screw_m3_0=screw("screw_m3_0", PALM_C[0], PALM_C[1], bottom=PALM_TOP))
-    assert score(bad) == 0.0
+    got, ok = score(bad), success(bad)
+    assert got == 0.0 and not ok
+    report["wrong_size_on_palm"] = {"score": got, "success": ok}
 
     # Score 0.5 for M4 on palm with another nearby
     two = start_scene(
         screw_m4_1=screw("screw_m4_1", PALM_C[0], PALM_C[1], bottom=PALM_TOP),
         screw_m4_0=screw("screw_m4_0", PALM_C[0] + 0.02, PALM_C[1], bottom=PALM_TOP),
     )
-    assert abs(score(two) - 0.5) < 1e-9
+    got, ok = score(two), success(two)
+    assert abs(got - 0.5) < 1e-9 and not ok
+    report["m4_with_nearby"] = {"score": got, "success": ok}
 
     # Score 0.25 for lift without place
     _lifted_m4 = True
     lifted = start_scene()
-    assert abs(score(lifted) - 0.25) < 1e-9
+    got, ok = score(lifted), success(lifted)
+    assert abs(got - 0.25) < 1e-9 and not ok
+    report["lifted_only"] = {"score": got, "success": ok}
     _lifted_m4 = False
-    return 5
+    return report
 
 
 if __name__ == "__main__":
+    # Offline report like dual-latch / din-rail / cabledemo result.json, without GPU
+    import json
+
     from yam_arena import ik, station
     from yam_arena.demo import ArmPlan
     from yam_arena.task_file import load
 
-    print(f"scoring: {self_test()} cases pass")
+    scoring = self_test()
     task = load(__file__)
     hz = 20.0
+    duration_s = {}
+    worst_ik_mm = {}
+    worst_ik_deg = {}
     for arm, waypoints in task.demo().items():
         plan = ArmPlan(list(waypoints), station.BASES[arm])
         q = np.array([plan.action7((k + 1) / hz)[0] for k in range(round(plan.duration * hz) + 5)])
         assert plan.worst_ik_mm < 0.5 and plan.worst_ik_deg < 0.1, (arm, plan.worst_ik_mm, plan.worst_ik_deg)
         assert np.all(q[:, :6] >= ik.LOWER) and np.all(q[:, :6] <= ik.UPPER), arm
-        print(f"{arm}: {plan.duration:.1f} s plan, worst IK {plan.worst_ik_mm:.3f} mm / {plan.worst_ik_deg:.3f} deg")
+        duration_s[arm] = round(plan.duration, 1)
+        worst_ik_mm[arm] = round(plan.worst_ik_mm, 3)
+        worst_ik_deg[arm] = round(plan.worst_ik_deg, 3)
+
+    result = {
+        "success": True,
+        "scoring_cases": len(scoring),
+        "scoring": scoring,
+        "duration_s": duration_s,
+        "worst_ik_mm": worst_ik_mm,
+        "worst_ik_deg": worst_ik_deg,
+    }
+    print(json.dumps(result, indent=2), flush=True)
