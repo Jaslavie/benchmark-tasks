@@ -2,20 +2,13 @@
 A fixed manikin forearm and open palm wait on the robot's left with a request card that reads M4 x 20 mm. The
 policy must take one screw from the M4 bin and place it alone in the palm, then let go.
 
-Scoring Criteria:
-  1. First, hard fails that always give 0: still holding any screw (gripper within 3 cm), or any M3/M5
-     screw ends up on the palm.
-  2. Full score (1.0): exactly one M4 screw rests alone on the open palm, you have let go, it stays still
-     for 1 second, and the other eight screws are still in the bins they started in.
-  3. Half score (0.5): you got an M4 onto the palm, but another screw is also on or right next to the palm.
-  4. Quarter score (0.25): you at least lifted an M4 off the table by 3 cm, but never finished a clean handoff.
-  5. These tiers do not add up — you get the single best tier that applies, otherwise 0.
+Scoring Criteria (tiers do not stack; single best tier, else 0):
+  - 0: still holding any screw (gripper within 3 cm), or any M3/M5 on the palm
+  - 1.0: one M4 alone on palm, released, still 1 s; other eight still in start bins
+  - 0.5: M4 on palm with another screw on or next to the palm
+  - 0.25: lifted an M4 by 3 cm without a clean handoff
 
-Geometry matches task.json (metres; x forward from the arm bases, y left). Screws are rigid boxes sized to each
-screw's overall envelope (threads not modeled). This file uses Box/Cylinder primitives; matching NVIDIA SimReady
-assets (https://huggingface.co/datasets/nvidia/simready-assets) for a mesh twin:
-
-SimReady assets (stand-ins):
+SimReady assets:
   1. M4 fastener: factory_bolt_m04_loose (also factory_bolt_m04_tight)
   2. Generic screws: hardware_screw_95_a01, hardware_screw_99_physics_a01, screw_high_res
   3. Optional clutter: factory_nut_m4_loose / factory_nut_m4_tight
@@ -188,7 +181,7 @@ _ENV: dict = {"env": None}
 
 
 def _install_env_hook() -> None:
-    """Keep a handle on the sim env so score() can check that the grippers have let go."""
+    """Cache the sim env for gripper release checks in score."""
     try:
         from yam_arena import inspect_embodiment as ie
     except Exception:  # pragma: no cover
@@ -229,9 +222,9 @@ def grippers() -> list[np.ndarray]:
 
 
 def _track_lift(objects) -> None:
-    """Remember whether any M4 screw was lifted 3 cm above the table during the trial."""
+    """Track whether any M4 was lifted 3 cm above the table."""
     global _lifted_m4
-    # Reset tracking when every M4 is still near its start on a fresh episode.
+    # Reset on a fresh episode when every M4 is near start
     if all(float(objects[n].pos[2] - SCREW_SPEC["M4"]["head_d"] / 2) < TOP + 0.005 for n in M4_NAMES):
         if all(
             math.hypot(float(objects[n].pos[0]) - SCREW_START_XY[n][0], float(objects[n].pos[1]) - SCREW_START_XY[n][1])
@@ -274,7 +267,7 @@ def _in_home_bin(name: str, obj) -> bool:
 def _released(objects) -> bool:
     gs = grippers()
     if not gs:
-        # Offline or no env yet treat resting on the palm as released.
+        # Treat resting as released when env is unavailable
         return True
     return all(
         float(np.linalg.norm(np.asarray(objects[n].pos[:3], float) - g)) >= RELEASE_DIST
@@ -288,11 +281,12 @@ def _on_palm_names(objects) -> list[str]:
 
 
 def score(objects) -> float:
-    """End-of-trial score: 0, 0.25, 0.5 or 1.0 (tiers do not stack).
+    """End-of-trial score; tiers do not stack.
 
-    Plain language: 0 if you are still holding a screw or put a wrong size on the palm; 1.0 if one M4 sits
-    alone on the palm with the rest still in their bins; 0.5 if an M4 is on the palm but another screw is
-    also there; 0.25 if you only managed to lift an M4. See the module docstring and README.
+    - 0: still holding a screw, or wrong size on palm
+    - 1.0: one M4 alone on palm, others in home bins
+    - 0.5: M4 on palm with another screw nearby
+    - 0.25: lifted an M4 only
     """
     _track_lift(objects)
     if not _released(objects):
@@ -304,7 +298,7 @@ def score(objects) -> float:
     m4_on = [n for n in on_palm if SCREW_HOME[n] == REQUESTED]
     if len(m4_on) == 1:
         others_home = all(_in_home_bin(n, objects[n]) for n in ALL_SCREW_NAMES if n != m4_on[0])
-        # A second screw near the palm blocks full score even if it is not counted as on the palm.
+        # Block full score if another screw is near the palm
         near_palm = [
             n
             for n in ALL_SCREW_NAMES
@@ -325,12 +319,12 @@ def score(objects) -> float:
 
 
 def success(objects) -> bool:
-    """Exactly one M4 screw alone on the palm, released, at rest; the other eight still in their bins. Holds 1 s."""
+    """True when score is full success (1.0)."""
     return score(objects) >= 1.0 - 1e-9
 
 
 def distance(objects) -> float:
-    """Metres from the nearest M4 screw centre to the palm centre (xy), plus height above the palm top."""
+    """Nearest M4 centre to palm centre, xy plus height above palm top, metres."""
     best = math.inf
     for n in M4_NAMES:
         p = objects[n]
@@ -368,8 +362,7 @@ def _pick_place(pick_xyz, place_xyz, grip=GRIP, travel_z=TRAVEL_Z):
 
 
 def demo():
-    """Left arm takes the middle M4 screw (screw_m4_1) from the M4 bin and sets it on the palm centre, then retreats.
-    Right arm stays clear on its own side. Open-loop; needs object_jitter=0."""
+    """Left arm places screw_m4_1 on the palm centre then retreats; right stays clear. Needs object_jitter=0."""
     name = "screw_m4_1"
     sx, sy = SCREW_START_XY[name]
     pick_z = TOP + SCREW_SPEC["M4"]["head_d"] / 2 + 0.002
@@ -404,23 +397,23 @@ def self_test(ObjectState=None):
     _lifted_m4 = False
     assert score(start_scene()) == 0.0 and not success(start_scene())
 
-    # One M4 alone on the palm others home scores 1.0.
+    # Score 1.0 for one M4 alone on palm
     good = start_scene(screw_m4_1=screw("screw_m4_1", PALM_C[0], PALM_C[1], bottom=PALM_TOP))
     _lifted_m4 = False
     assert abs(score(good) - 1.0) < 1e-9 and success(good)
 
-    # Wrong size on palm scores 0.
+    # Score 0 for wrong size on palm
     bad = start_scene(screw_m3_0=screw("screw_m3_0", PALM_C[0], PALM_C[1], bottom=PALM_TOP))
     assert score(bad) == 0.0
 
-    # M4 on palm plus another screw near the palm scores 0.5.
+    # Score 0.5 for M4 on palm with another nearby
     two = start_scene(
         screw_m4_1=screw("screw_m4_1", PALM_C[0], PALM_C[1], bottom=PALM_TOP),
         screw_m4_0=screw("screw_m4_0", PALM_C[0] + 0.02, PALM_C[1], bottom=PALM_TOP),
     )
     assert abs(score(two) - 0.5) < 1e-9
 
-    # Lifted but not placed scores 0.25.
+    # Score 0.25 for lift without place
     _lifted_m4 = True
     lifted = start_scene()
     assert abs(score(lifted) - 0.25) < 1e-9
