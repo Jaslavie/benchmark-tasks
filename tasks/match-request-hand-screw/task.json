@@ -1,0 +1,20 @@
+{
+  "title": "Match the request and hand one metric screw",
+  "category": "Impact on jobs",
+  "keywords": [
+    "part selection",
+    "size matching",
+    "handover",
+    "fasteners",
+    "small-object grasp"
+  ],
+  "instruction": "The person asks for an M4 x 20 mm Phillips pan-head machine screw. Choose the matching size from the three bins, place one screw alone in the tray, then let go.",
+  "context": "Hardware-counter and bench-assembly work: a helper must match a spoken size request to the correct bin, pick one fastener, and hand it over without grabbing the wrong size. Done by retail salespersons, stock clerks and assemblers (O*NET 41-2031.00, 53-7065.00, 51-2092.00). Bin colour and a front plaque identify size: yellow M3, white M4, green M5. A plastic tray is the handoff target.",
+  "setup": "Positions in cm from the midpoint between the two arm bases on the table (x forward away from the robot, y to the robot's left). Three open bins in a row, centres at x 26, y -30 / 0 / 30: each is outer 28 x 24 x 4.5 cm walls 0.8 cm thick on the table floor, fully coloured yellow / white / green for M3 / M4 / M5, with a 5 x 2.2 cm black plaque on the robot-facing wall. Inside each bin, three Phillips pan-head screws: M3 and M5 are fixed NVIDIA SimReady meshes at x 26 with centres 9 cm apart along y (M3 hardware_screw_m3_a02 scaled to 3.0 cm; M5 screw_high_res to 4.2 cm). M4 has a free metal blank at x 22 y 0 sized 4.0 x 4.0 x 5.4 cm (50 g) and two fixed SimReady factory_bolt_m04_loose fixtures at x 30 y ±9 cm scaled to 4.0 cm. A fixed SimReady dishware_plastic_tray_a01 scaled to 12 cm extent sits at x 5, y 0. A white request card 6 x 4 cm on a 2 cm stand at x -2, y 0 reads M4 x 20 mm facing the robot.",
+  "scoring": "End state only, after the arms stop, from a top photo and a caliper or the scorer's pose readouts. Score 0 if: any gripper centre is within 3 cm of any screw; more than one screw lies in the tray; any screw from the M3 or M5 bin lies in the tray; the bins, tray or request card were moved more than 1 cm from their marks; a bin tip exceeds 15 degrees. A screw lies in the tray when its centre is inside the tray floor outline (top view), its lowest point is within 4 mm of the tray floor, and it is at rest (under 10 mm/s and 0.5 rad/s). Otherwise: 0.25 if any single M4 screw has been lifted at least 3 cm above the table at any point; 0.5 if exactly one M4 screw lies in the tray but a second screw of any size also touches or sits next to the tray; 1.0 if exactly one M4 x 20 mm screw lies alone in the tray, released, at rest for 1 s, and the other eight screws remain in their starting bins (each screw's centre still inside its bin's inner floor outline). Partial credit is not additive beyond those tiers.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Return every screw to its colored bin (three M3 yellow, three M4 white, three M5 green). Check the tray is clear and the request card still shows M4 x 20 mm. Nothing is consumed.",
+  "fidelity": "Fixed bin mates and tray are SimReady meshes (NVIDIA CC-BY-4.0): M3 hardware_screw_m3_a02, M4 factory_bolt_m04_loose, M5 screw_high_res, tipped onto their sides; free pick is a metal blank sized to the M4 head envelope because thin convex SimReady bolts slip from parallel jaws; handoff tray dishware_plastic_tray_a01 fixed with no mass. Bins are open Box walls (28x24x4.5 cm) with front plaques. Scorer keys off start bin, not OCR. USD packages live under tasks/match-request-hand-screw/assets/simready/.",
+  "scores": "Dream-1 run: 0.0 (hit step limit); demo: 1.0",
+  "media": "M-NVRK7T"
+}
