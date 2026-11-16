@@ -1,0 +1,25 @@
+{
+  "title": "Laminate a flash card by feeding its pouch sealed edge first, square to the slot, and letting the rollers take it",
+  "category": "Impact on jobs",
+  "keywords": [
+    "laminator",
+    "laminating pouch",
+    "sealed edge first",
+    "feed rollers",
+    "jam",
+    "teaching materials",
+    "office machine",
+    "orientation",
+    "thin flat part",
+    "release timing"
+  ],
+  "instruction": "Laminate the flash card.",
+  "context": "Teaching assistants (O*NET 25-9042.00: 'Laminate teaching materials...') and office staff feed pouches into desktop laminators daily. A pouch is sealed along one edge, and that edge goes in first: fed open end first, its loose films catch at the hot rollers and jam the machine. Once the rollers take it, let go.",
+  "setup": "Positions are centres in cm from the midpoint between the arm bases: x forward, y to the robot's left; heights above the table top. Laminator (fixed): an A4 desktop pouch laminator, light grey moulded plastic housing 34 (x) x 11 (y) x 7 cm with a dark control strip along its entry edge, centred (35, -1.5) in the middle of the table, its entry face (y -7) facing the right arm, so pouches pass through it toward the robot's left. Entry slot 23.5 cm wide (x 23.25 to 46.75), 8 mm high (3.5 to 4.3 cm up), lips flared to 1.2 cm, in a dark grey bezel; inside it, two black rubber rollers 3 cm across whose nip is 2.5 cm in (y -4.5); an exit slot of the same size in the back face (y +4); a lit green ready lamp, a power switch and a small centre mark on top. Box of pouches (loose): a closed dark blue card box of card-size laminating pouches with a white band and a printed picture of a pouch, no text, 11 x 8 x 3.2 cm, 300 g, centred (35, -25.5). Pouch (loose, one rigid body, 8 g): a jumbo card laminating pouch 75 (x) x 105 (y) mm of two clear glossy films, welded along one short edge by a 4 mm frosted seam, its other three edges open; inside, a playing-card-size flash card (63 x 88 mm, a red apple on white in a green border, its top toward the open end) pushed against the seam, leaving 13 mm of clear film at the open end and 6 mm at each side. It lies flat on the box, in line with the slot, centred (35, -22.25): open end at y -17.0, overhanging the box's edge by 4.5 cm toward the laminator, 10 cm from its entry face; sealed end at y -27.5, toward the robot's right. Nothing else is on the table. The layout is the same in every trial, as in the screenshot.",
+  "scoring": "Heading: seen from above, the angle between the feed direction (straight into the slot, square to the entry face) and the direction from the pouch's centre to the middle of its sealed edge. The bite is the first moment any part of the pouch reaches the rollers' nip line, 2.5 cm inside the entry face; only the first bite counts. Square: heading 10 degrees or less; skewed: over 10 and up to 30; any other heading means an open edge leads. A gripper is closed on the pouch when its fingertips are less than 8.5 cm apart, their tips are below the pouch's top surface and the point between them is over the pouch. Out: every part of the pouch is past the back face. 0, and it stays 0 (a jam): the bite is open edge first (the pouch is drawn 2 cm and stops), or a gripper is closed on the pouch once the rollers have drawn it 2 cm (it stops). Otherwise: 1.0 (success, the trial ends 1 s later) for a square bite with the pouch out; 0.5 at the run limit for a skewed bite with the pouch out; a pouch still being drawn at the run limit after a square or skewed bite, with no gripper closed on it, counts as out. 0 in every other case (never bitten, dropped, knocked off the table).",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "A laminated pouch is consumed; use a fresh loaded pouch for each trial.",
+  "fidelity": "Rigid bodies, PhysX at 240 Hz, 20 Hz control. The pouch is a rigid 2.5 mm plate (a real one is about 1 mm and flexible). The bite, the 0.6 m/min draw, a jam and a held pouch are task-file logic: from the bite the pouch's pose is set each step, with no film physics or heat. The slot is 8 mm, not about 2 mm, with flared lips. The laminator is fixed. Gripper 50 N per pad.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-UHX6BV"
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Open a bottle with a detented safety loop and rocker latch",
+  "category": "Societal relevance",
+  "keywords": [
+    "bimanual",
+    "bottle",
+    "safety loop",
+    "rocker latch",
+    "contact-rich manipulation"
+  ],
+  "instruction": "Open the bottle and keep it upright on the table.",
+  "context": "Opening a reusable spill-resistant bottle requires stabilizing a free object while manipulating two independent mechanical restraints. This tests everyday assistive manipulation rather than unscrewing a cap or lifting an unconstrained lid.",
+  "setup": "One empty grey steel-bodied bottle, 72 mm body diameter and approximately 282 mm closed height, in the official calibrated YAM station. Its free body is 350 g, spring-opening lid 25 g, spring-return rocker 7 g and U-shaped safety loop 6 g. Loop crown centreline diameter is 30 mm and section diameter 6 mm; rocker face diameter is 13 mm. Nominal bottle-base pose is (0.20,0,0.7480) m, upright, button facing -Y, lid closed and safety loop raised. Gravity settles it onto the 1.10 x 1.30 x 0.06 m table, whose centre is (0.36,0,0.7175) m and top is Z=0.7475 m. The two six-axis YAM arms stand at (0,0.305,0.75) m and (0,-0.305,0.75) m, with standard parallel grippers (0-93.9 mm jaw gap). Both start at joints [0,1,1,-0.6,0,0] radians and open grippers. The official station provides room, camera stand, top and wrist cameras, lights and robot meshes; their pinned source and the procedural bottle geometry reproduce the setup. Object jitter is zero. There are no additional task objects, holding fixtures, contents or tools.",
+  "scoring": "Evaluate at 20 Hz. The current score at termination counts. Each condition requires 8 consecutive control ticks (0.4 s): 1.0 if lid angle >60 degrees from closed; otherwise 0.5 if lid >15 degrees; otherwise 0.25 if safety-loop angle >=150 degrees from raised; otherwise 0. A sampled bottle-axis dot world-up <=0.90 (tilt >=25.842 degrees), bottle-base origin Z<0.7375 m (10 mm below tabletop), or geometric table support lost (the 36 mm-radius bottom disc's lowest edge must stay within 10 mm of tabletop Z=0.7475 m, with base centre X in [-0.154,0.874] m and Y in [-0.614,0.614] m), nonfinite robot/bottle state, unavailable/nonfinite wrist measurement, or wrist joint reaction force norm >100 N for 4 consecutive ticks permanently invalidates the trial and overrides credit with zero. Use the larger of the two gripper incoming-joint force norms, including gravity. Full score or invalidation ends the episode; timeout receives the current partial score. Only robot contact may manipulate the bottle; direct bottle-joint actuation, pose edits, destruction or geometry edits are outside the allowed action interface.",
+  "run_limit": "2,400 control steps (120 simulated seconds at 20 Hz); PhysX integration is 0.001 s, 50 physics substeps per control tick.",
+  "reset_notes": "Load yam/task.py in the official yam_arena station with object_jitter=0 and control_hz=20. Reset root/joint states to the fixed nominal setup and YAM READY pose with open jaws; passive mechanism forces operate during 10 unscored settling ticks (0.5 s). Refresh cameras and clear time, scorer counters and invalidation history. Official CLI verification uses seed 0; no task object randomization or consumables.",
+  "fidelity": "Approximate USD/PhysX: four links, three passive joints and contact-only hooks/loop. Lid/rocker springs and an effective loop detent with COM gravity compensation run at 1 kHz. Mass, friction and springs are estimates; native dry friction/full dynamic bias are omitted. No fluids, seal compression, deformation or breakage. Wrist reactions have static-load checks only, not dynamic/hardware calibration. Table support is geometric. Further limits are in README.",
+  "scores": "Dream-1 (dreamlabs/dream-1-beta, continuous session, 4 rows/request): 0.0 at 2400 steps / 120 s; scripted YAM demo: 1.0 at 405 steps / 20.25 s.",
+  "media": "M-ANXZMU"
+}

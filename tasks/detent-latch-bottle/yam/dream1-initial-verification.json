@@ -1,0 +1,321 @@
+{
+  "valid_completed_trial": true,
+  "benchmark_score": 0.0,
+  "framework_score": 0.0,
+  "partial_or_complete_trace_result": {
+    "score": 0.0,
+    "success": false,
+    "failure": null,
+    "steps": 2400,
+    "simulated_seconds": 120.0
+  },
+  "first_credit_ticks": {},
+  "recorded_steps": 2400,
+  "framework_step_events": 2400,
+  "policy": "dream",
+  "model": "dreamlabs/dream-1-beta",
+  "termination_reasons": [
+    "max_steps"
+  ],
+  "framework_results": {
+    "abstentions": {},
+    "errored_trials": 0,
+    "metrics": {
+      "task_score": 0.0
+    },
+    "total_scenes": 1,
+    "total_trials": 1
+  },
+  "has_infrastructure_error": false,
+  "max_sampled_wrist_force_n": 7.917134761810303,
+  "max_sampled_tilt_deg": 0.0,
+  "max_angles_deg": {
+    "lid_deg": 0.19924255448415604,
+    "loop_deg": -6.153963144300183e-06,
+    "button_deg": 5.7463593779193886e-05
+  },
+  "dream_request_count": 50,
+  "dream_request_attempts": 99,
+  "expired_retry_messages": 49,
+  "tracking_error_rad": [
+    {
+      "max": 0.1383811815856351,
+      "mean": 0.04404105995524007
+    }
+  ],
+  "guard_modifications": 2179,
+  "final_log": "adhoc_a9140dfc.json",
+  "scope": "One fixed-layout trial; no success-rate estimate or robustness claim.",
+  "date": "2026-11-07",
+  "registration": {
+    "policy": "dream",
+    "model": "dreamlabs/dream-1-beta",
+    "max_steps": 2400,
+    "control_hz": 20,
+    "object_jitter": 0,
+    "seed": 0,
+    "instruction": "Open the bottle and keep it upright on the table.",
+    "scorer": "task_score",
+    "epochs": 1,
+    "scripted_reference_score": 1.0
+  },
+  "videos": {
+    "dream1.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 640,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 1583776,
+      "sha256": "5a608ec28998aedec63fd75ce3ce01db7281a983b21327386670d7926cc9c430",
+      "full_decode_passed": true
+    },
+    "top_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 514014,
+      "sha256": "cce24920560e9f9255a757a65c982503212b60dd0cd61aec82f9a3594bbf67af",
+      "full_decode_passed": true
+    },
+    "left_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 558805,
+      "sha256": "49c783a78bf8946067eb41fe886e131220715300411c4a5e49dfec5f9fd7fe93",
+      "full_decode_passed": true
+    },
+    "right_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 543117,
+      "sha256": "34cdf39d79c512fe4162093e82f6becba41f895a9f45607353586a7e4bdcb02b",
+      "full_decode_passed": true
+    }
+  },
+  "source_sha256": {
+    "task.json": "25f321298ec66664902c7d5767b0dd705775fb863808b5158765a4fd41bd68d3",
+    "yam/task.py": "848473f4fe2503e58ea34a5503d0237c74c82bec12db27d09b1c49a983b1e854",
+    "yam/probe.py": "796d7b8e32a6ee41a3010af05d7688dc289a23e9ea14a9881137c62d6b719a33",
+    "yam/bottle_runtime.py": "9e8e6fe5b8c9b6c07e900a39b350ac3f57502e63185317b0a891facb87c93e58",
+    "yam/check_reach.py": "a3622639e78e54e7a0ffa7dc4b902aaf2479c6655e04f2600c899e618ab6e8b6",
+    "yam/motion.py": "3910f067d4d376401244b22d57ea81bb23b42b59078fa641d478831144403a15",
+    "yam/test_contract.py": "826f17dcc9a957e81ebef277429d83530ee507eed836ee4dc70744aa4e9dc821",
+    "yam/bottle_usd.py": "2c735626154e15c0313bce4bf56cc4741da25dd20765b96159a6b164d3574682",
+    "detent_bottle/environment.py": "7fb44034d7a3ac618c18f92f32c3aee9627f09d6d2d47c554e987268efabd207",
+    "detent_bottle/__init__.py": "63938a393542cf4a344ecab63d0c98c0ec4e21e2d49c91e996720a4ae904b211",
+    "detent_bottle/bottle_model.py": "78d27cf13301c4c4cfc42466a8d0798afc46cba2fb097d299c7ca35e9db66ea0",
+    "detent_bottle/scoring.py": "8aa1d53626d435287633d60532c67d3e52a5f9cdc2224659d04fb16f4492bc4c",
+    "detent_bottle/rendering.py": "fc4ba95ff192923c23a21113c7d09ab8ff13ea3fe615f2f968e1a1e0024d7a3b",
+    "detent_bottle/inspect_adapter.py": "fe71306332c73b98f57476a915464b65aa0492f5143e77056fb425fa26706f83",
+    "detent_bottle/run.py": "7598c592e21077eec32014a390210ccb608012c45ed0442ae59e78a74813b6ad",
+    "detent_bottle/robot_model.py": "afe94b7a9c085ba584f2b02aa89ae33b4d63b8f98be5d443b98f01975908ac3c",
+    "detent_bottle/scene.py": "b91556c73844da720760761b1ea535807881815f2b0f2d12057b1fa56c49a1ac",
+    "detent_bottle/reference.py": "1893c019bdc5833bfdb30cd8731117d475ac644ea2a3004974399dcda879c17b"
+  },
+  "runtime_source_matches_scripted_reference": true,
+  "source_snapshot_hashes_verified": true,
+  "guard_analysis": {
+    "clamp": {
+      "events": 2179,
+      "max_abs_delta_by_dim": [
+        0.0,
+        0.04196303001754678,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.13837706184748358,
+        0.09745238285450945,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "meaningful_counts_by_dim": [
+        0,
+        1609,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2176,
+        1752,
+        0,
+        0,
+        0,
+        0
+      ],
+      "dimension_labels": [
+        "left_j0",
+        "left_j1",
+        "left_j2",
+        "left_j3",
+        "left_j4",
+        "left_j5",
+        "left_gripper",
+        "right_j0",
+        "right_j1",
+        "right_j2",
+        "right_j3",
+        "right_j4",
+        "right_j5",
+        "right_gripper"
+      ]
+    },
+    "delta-limit": {
+      "events": 8,
+      "max_abs_delta_by_dim": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.01626303790610434,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.01898480245283435
+      ],
+      "meaningful_counts_by_dim": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3
+      ],
+      "dimension_labels": [
+        "left_j0",
+        "left_j1",
+        "left_j2",
+        "left_j3",
+        "left_j4",
+        "left_j5",
+        "left_gripper",
+        "right_j0",
+        "right_j1",
+        "right_j2",
+        "right_j3",
+        "right_j4",
+        "right_j5",
+        "right_gripper"
+      ]
+    }
+  },
+  "service_conditions": "49 expired responses recovered by the stock SDK; 50 successful chunk requests, 99 request attempts, no unhandled trial error.",
+  "interpretation": "The observed SDK rollout score remains0.0. Applied-target FK never comes within21.5cm horizontally of the bottle; before-core-guard SDK targets are similarly distant, so clamping alone does not explain missing reach. Every chunk used a new server session, and the client resets its seam smoother on expiry. Roughly38s wall-time between chunk requests suggests idle expiry, but its causal effect on behavior is not established. Use a short known-task continuity preflight before another long evaluation.",
+  "scripted_reference": {
+    "score": 1.0,
+    "steps": 405,
+    "simulated_seconds": 20.25,
+    "report": "verification.json"
+  },
+  "elapsed_wall_seconds": 1944.923,
+  "wall_time_method": "Remote run.exit mtime minus registration.json mtime; includes initialization and requests, excludes video export.",
+  "motion_diagnosis": {
+    "unique_sessions": 50,
+    "request_count": 50,
+    "tcp_from_applied_targets": {
+      "left": {
+        "initial": [
+          0.32340965490195317,
+          0.30500414472224285,
+          1.0081041553833554
+        ],
+        "at_10s": [
+          0.2204888089092392,
+          0.29975852504851125,
+          0.9756828068434942
+        ],
+        "final": [
+          0.1740129831355017,
+          0.2829506713287752,
+          0.9484391780023971
+        ],
+        "min_horizontal_distance_to_bottle_m": 0.27587240516982414,
+        "fraction_within_10cm_horiz": 0.0
+      },
+      "right": {
+        "initial": [
+          0.32340965490195317,
+          -0.30499585527775713,
+          1.0081041553833554
+        ],
+        "at_10s": [
+          0.23227228304469894,
+          -0.29494505556592315,
+          0.9594492899480263
+        ],
+        "final": [
+          0.22597618848736,
+          -0.217104989103236,
+          0.9354963623681808
+        ],
+        "min_horizontal_distance_to_bottle_m": 0.21498956260796256,
+        "fraction_within_10cm_horiz": 0.0
+      }
+    },
+    "between_request_frame_wall_s": {
+      "min": 37.78462314605713,
+      "median": 38.300548791885376,
+      "max": 39.42863965034485
+    },
+    "guard_counterfactual_fk": {
+      "left": {
+        "before_guard_min_horizontal_distance_m": 0.27587253324823363,
+        "after_guard_min_horizontal_distance_m": 0.27587240516982414,
+        "max_tcp_change_due_to_guard_m": 0.008724272423270013
+      },
+      "right": {
+        "before_guard_min_horizontal_distance_m": 0.21501053594721498,
+        "after_guard_min_horizontal_distance_m": 0.21498956260796256,
+        "max_tcp_change_due_to_guard_m": 0.04026453049672622
+      }
+    },
+    "interpretation": "FK of targets, not measured end-effector trajectories. Even SDK targets before core guards never approach the bottle. Clamping alone does not explain the missing reach. All50chunks used distinctserver sessions; expiry resets server episode and client seam smoother. Slow simulation idle-timeout mechanism remains an inference, not proven causal attribution.",
+    "timing_diagnosis": {
+      "actions_per_chunk": 48,
+      "control_hz": 20,
+      "sim_seconds_per_chunk": 2.4,
+      "median_wall_seconds_between_chunk_frames": 38.300548791885376,
+      "simulation_slowdown_vs_realtime": 15.958561996618908,
+      "median_successful_api_rtt_s": 0.351659470499726,
+      "median_successful_server_inference_ms": 259.0,
+      "physics_hz": 1000,
+      "official_default_physics_hz": 240,
+      "server_idle_timeout_s": null,
+      "assessment": "Long local execution gaps are confirmed. Idle expiration is the leading inference; exact gateway TTL and causal impact on task behavior are unverified. No paid follow-up test performed."
+    }
+  },
+  "continuous_server_episode_verified": false,
+  "evaluation_quality": "Completed SDK rollout, but all49inter-chunk transitions restarted the server episode. Not an uninterrupted policy evaluation."
+}

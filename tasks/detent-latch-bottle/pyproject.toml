@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inspect-robots-detent-bottle"
+version = "0.1.0"
+description = "Free-standing detent-latch bottle with dual Panda grippers"
+requires-python = ">=3.11"
+dependencies = [
+  "mujoco==3.3.7", "robosuite==1.4.1", "numpy>=1.24,<2.1",
+  "scipy>=1.10,<1.14", "Pillow>=10,<12", "imageio==2.37.0",
+  "imageio-ffmpeg>=0.5,<0.7",
+]
+
+[project.optional-dependencies]
+inspect = ["inspect-robots @ git+https://github.com/robocurve/inspect-robots.git@772019598e42ccc7921a043dee3a2ea2692020ea"]
+
+[project.entry-points."inspect_robots.embodiments"]
+detent_bottle = "detent_bottle.inspect_adapter:make_embodiment"
+
+[project.entry-points."inspect_robots.tasks"]
+detent-latch-bottle = "detent_bottle.inspect_adapter:make_task"
+
+[project.entry-points."inspect_robots.scorers"]
+detent_bottle_score = "detent_bottle.inspect_adapter:make_scorer"
+
+[project.entry-points."inspect_robots.policies"]
+detent_bottle_demo = "detent_bottle.inspect_adapter:make_demo_policy"
+
+[tool.setuptools.packages.find]
+include = ["detent_bottle*"]

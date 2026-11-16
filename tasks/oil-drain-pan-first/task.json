@@ -1,0 +1,20 @@
+{
+  "title": "Slide the drain pan under the engine before pulling its drain plug",
+  "category": "Impact on jobs",
+  "keywords": [
+    "small engine",
+    "oil change",
+    "drain plug",
+    "spill prevention",
+    "order of operations"
+  ],
+  "instruction": "The engine is cold. Drain its oil.",
+  "context": "Small engine mechanics and automotive lube technicians change oil every day (O*NET 49-3053.00, 49-3023.00). The drain pan goes under the outlet before the plug comes out. Once the plug is out, the oil pours out at once, and threading the plug back in against a hot stream isn't practical, so a late pan means oil on the floor. That is a slip hazard, and used oil spills must be cleaned up under EPA used-oil rules (40 CFR 279.22). The pan stays under the outlet while the engine drains. The plug goes in the parts dish so it isn't lost in the oil. The instruction names none of this.",
+  "setup": "Positions are in cm from the midpoint between the two arm bases, with x forward, y to the robot's left and the table top at z 0. A fixed single-cylinder engine, 19 cm tall (gray crankcase, finned cylinder lying back, red fuel tank, black air filter, muffler and recoil starter), sits on a wooden stand 4 cm tall at the back of the bench. The crankcase's front face is at x 28.5, spanning y -8 to 14, and the stand's front edge is at x 29.5. A zinc drain pipe, 1.5 cm across, sticks out 3 cm from that face toward the arms at y 6, its axis 6.5 cm above the bench; its outlet is at x 25.5. Higher on the same face, at y -4.5 and 9 cm above the bench, is a yellow oil-fill cap with dipstick. It is closed by a steel hex-head drain plug (2 cm across the flats, 1.2 cm long, with a copper washer and a 2.5 cm shank inside the pipe; 30 g). A black plastic oil drain pan, 11.8 cm across and 3 cm deep, 80 g, with a molded grab handle (2.2 x 3 x 2.2 cm) on the side toward the robot, rests centered at x 23.5, y 20. A fixed steel parts dish, 7.6 cm across and 1.4 cm deep, is at x 25, y -8.",
+  "scoring": "The scorer watches the whole run. The plug is out once its head is 2.5 cm or more from where it started. The pan is under the outlet when it lies flat on the bench (within 15 degrees) with the point below the outlet at least 1.5 cm inside its inner rim. The score is 0 if the plug was ever out for 2 control steps in a row (0.1 s at 20 Hz) without the pan under the outlet, even if the pan was slid under later. With the plug still in at the end, the score is 0.25 if the pan rests under the outlet and 0 otherwise. With the plug out and the pan resting under the outlet throughout, the score is 0.75, or 1.0 if the plug rests in the parts dish. Possible scores: 0, 0.25, 0.75, 1.0. In a real trial, watch the video for whether the pan was under the outlet before the plug came out, then check where the pan and the plug end up.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Push the plug back into the pipe and set the pan back at its start. No oil is used, in the simulation or in a real trial, and the engine is cold.",
+  "fidelity": "Real size. No oil flows: the scorer judges the order from the plug and pan positions. The plug's threads are not modeled, so it pulls straight out of the pipe instead of being unscrewed. The engine is a fixed model with simple box colliders; the pipe's bore and the pan's rim are made of blocks. Rigid-body physics only.",
+  "scores": "Dream-1 run: 0 (2,400 steps); demo: 1.0",
+  "media": "M-TZ4P5H"
+}

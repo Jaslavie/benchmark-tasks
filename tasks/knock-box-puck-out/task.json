@@ -1,0 +1,21 @@
+{
+  "title": "Knock a spent espresso puck out of the portafilter into the knock box",
+  "category": "Societal relatability",
+  "keywords": [
+    "barista",
+    "espresso",
+    "knock box",
+    "portafilter",
+    "impact",
+    "momentum"
+  ],
+  "instruction": "Empty the used coffee out of the portafilter into the knock box, then put the portafilter back on its stand.",
+  "context": "Knocking the spent puck out of the portafilter follows every espresso shot and is a familiar sight and sound: anyone who has waited at a café counter has heard the barista's knock, and people with an espresso machine at home or work do it after each cup. Barista training teaches one way: turn the basket face-down over the knock box and give one firm knock on its rubber-sleeved bar, so the packed puck drops out whole. Digging it out bends the basket; banging it on the counter or machine chips the counter and dents the basket rim, which then seals poorly. Here no tilt, carry or slow set-down frees the puck: only a sharp stop of the basket does, over the box, with the portafilter still in hand. Unlike #720 (pull a peel out from under a pizza: sliding inertia, no collision) and #142 (hammer a nail another arm holds), the held container is itself the striking body and the knock frees what is inside it.",
+  "setup": "Positions in cm from the midpoint between the arm bases (x forward, y left). Portafilter: a 180 g chromed-brass basket cup (an octagon 6.4 cm across, 2.5 cm deep, 0.3 cm floor, black spout block under it) with a 12 x 2.2 x 2.2 cm walnut handle running back toward the arms; it sits basket-up on a fixed grey powder-coated steel holder (a 5 x 5 cm pedestal 12.2 cm tall under the spout and a handle rest), basket centre at x 42, y -5, the handle's end free at x 26.8. Puck: spent coffee, 35 g, a dark brown octagonal disc 5.4 cm across and 1.4 cm thick, packed on the basket floor (held there with 1.5 N). Knock box: a fixed black ABS bin, 13 x 13 cm inside, 15 cm tall, 0.8 cm walls and a rubber floor mat, centred at x 45.5, y -22; a black rubber-sleeved steel knock bar 2.2 x 2.2 cm runs across its opening along y at x 41.5, its top 1.2 cm above the walls.",
+  "scoring": "From the episode's recorded poses (the trial video on a real rig). Latched 0 for the rest of the trial: a gripper's TCP ever inside the basket (within 2.5 cm of its axis, between its floor and 1.3 cm above its rim: digging the puck out); or, when the puck comes loose, the basket's centre outside the knock box's walls + 1 cm (knocked on the table or the holder) or neither TCP within 3 cm of the portafilter (thrown or dropped). Otherwise 0.5 when the puck's centre is inside the knock box's walls and below the bar's top; 1.0 when in addition the portafilter is back on its holder (basket centre within 1.5 cm of its spot, floor within 5 mm of its seat, tilt under 10 deg), both are let go (both grippers 2.5 cm clear) and neither moved more than 1 mm or 1 deg over the last control step, success when held 1 s. 0 while the puck is still in the basket or anywhere else. Scored at the last step. Possible scores: 0, 0.5, 1.0.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Put a puck back on the basket floor and re-bond it (on a real rig: a printed puck held by an O-ring friction fit, or a fresh spent puck), set the portafilter basket-up on its holder and empty the knock box; the holder and the box do not move.",
+  "fidelity": "Rigid boxes, one shared friction (1.2 static, 1.0 dynamic). The puck is held on the basket floor by a breakable bond (1.5 N): its weight turned over (0.34 N), the carry or a slow set-down on the bar stay below that (tried in sim); a knock that stops the basket within a few milliseconds (0.35 m/s in the demo) exceeds it. The basket and puck are octagons of boxes. No loose grounds, crumbling, rubber sleeve compliance or sound. The outcome is judged from simulator poses every step.",
+  "scores": "Dream-1 run: 0; demo: 1.0",
+  "media": "M-TEJWKV"
+}

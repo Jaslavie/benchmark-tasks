@@ -1,0 +1,31 @@
+{
+  "trials": {
+    "demo": {
+      "steps": 1056,
+      "score": 1.0,
+      "wall_seconds": 380.12477254867554
+    },
+    "model": {
+      "steps": 2400,
+      "score": 0.0,
+      "wall_seconds": 781.2686970233917
+    }
+  },
+  "evaluated_source_sha256": {
+    "counterexamples.py": "2b06bab96b3a70ce79a9d1836d5dafaa7a51f911840dccd38becceeaeddd9fe1",
+    "design.py": "003094bff2e539dffdba9b9a35bac9eb7fbbb515d929db2dfb758200cd63594f",
+    "native_contacts.py": "99695d74487bc5884d1316ed22ed42abb5cf89e5e2255a381f0f5aa1a8dbeac1",
+    "policy/current_api_bridge.py": "86ce4c044aea7a10fc85be405535b20ba90bec26ecf3fe51bb28e4915e2adbf3",
+    "policy/dream_current.py": "bd9e9b318dcddca16e5285e0651c01be15af7ad7fd927d353b65e3eae358ddf7",
+    "policy/pyproject.toml": "d5714a78223b93d5f7f7cbd62d606654e82cd02378703e787487071350161288",
+    "runtime/pyproject.toml": "97bf986a1c6664803f27a7acc36dc79ccae8b2dcea6a30ea4bbd65c1e231ba03",
+    "runtime/yam_articulated.py": "25496278a7da8c3595d8bcc751a0156a4bdb2b3c3231fb42fefd85af7b61bb36",
+    "runtime/yam_articulated_base.py": "b769a444f50e97f30f6d50dc5a6986358160be46d19b839002cb17137c5fed93",
+    "runtime/yam_feedback.py": "57291e9e0d47396008cb2d03795a7a43d20e2263ddebc851a1a94ec476855fe4",
+    "scoring.py": "f1f07ecea13ca666dae560c0caafc329d588865afbbd5397bdf7c4665426679f",
+    "task.py": "f6163367da9414826998b9e49bff9cdc88518402b8b71283a85d3911a39f6801",
+    "validate.py": "58843f625b8d20fd13c5b35bc3ffde2d52b1c3da3b825863c7b33837a017d34d"
+  },
+  "model_recoveries": 0,
+  "rows_per_request": 8
+}

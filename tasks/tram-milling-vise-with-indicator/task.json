@@ -1,0 +1,12 @@
+{
+  "category": "Impact on jobs",
+  "scores": "Dream 1 scored 0.0 in 2400 steps. The scripted demonstration scored 1.0 in 1056 steps.",
+  "instruction": "Square the vise fixed jaw to the traverse axis and secure the base. Confirm its alignment with the indicator. Leave both grippers clear. All machinery is unpowered.",
+  "fidelity": "Original bench fixture with native cam contact and spring loaded pad. No spindle or cutting force is simulated.",
+  "media": "M-4LWV7V",
+  "scoring": "Score 0 before a complete contact sweep. The carriage must enter the regions at or below -30 mm and at or above +30 mm and pass within 2 mm of centre. During measurement plunger displacement must remain between -6 and +0.5 mm and travel within 40 mm of centre. A valid sweep earns 0.25 or 0.5 if the reading span is at most 0.50 mm. A span at most 0.20 mm earns 0.75 if the adjustment hand is clear throughout the sweep and the clamp pad stays in contact with 0.25 to 5.5 mm spring compression. During verification jaw yaw may vary by at most 0.1 degree and swivel centre displacement by at most 0.10 mm. Score 1 after both hands stay open and clear and the secured rotor remains below 8 mm/s equivalent rim speed for one second. Releasing the clamp or losing alignment invalidates verification. Permanent zero for any nonfinite sample or centre displacement above 0.50 mm.",
+  "context": "A fixed jaw at four degrees introduces about 4.2 mm of lateral error across 60 mm of travel. Work located against it inherits that angle. Checking and aligning workholding fixtures is a documented setup duty for machinists and CNC operators and multiple machine tool setters.",
+  "run_limit": "2400 control steps at 20 Hz",
+  "setup": "Use an unpowered bimanual YAM bench with tabletop at z 0.7475 m. The vise and indicator origins coincide at x 0.250 m and y 0. Their bases are bolted down. The steel swivel supports two 80 mm jaws and an eccentric cam above a spring loaded friction pad. Set the swivel yaw to +4 degrees and close the cam to -55 degrees. The independent indicator rail runs along y. Start the carriage at y -35 mm and preload its spring probe against the fixed jaw. The blue carriage knob moves the indicator and the upper stop on the vise screw tommy bar turns the loosened assembly. Native dimensions and material assumptions are listed in README.md and scene_inventory.json.",
+  "title": "Square a milling vise by sweeping its fixed jaw with an indicator"
+}

@@ -1,0 +1,187 @@
+{
+  "continuous_model_evaluation": true,
+  "continuous_model_score": 0.0,
+  "unique_server_sessions": 1,
+  "session_transitions": 0,
+  "valid_completed_trial": true,
+  "benchmark_score": 0.0,
+  "framework_score": 0.0,
+  "partial_or_complete_trace_result": {
+    "score": 0.0,
+    "success": false,
+    "failure": null,
+    "steps": 2400,
+    "simulated_seconds": 120.0
+  },
+  "first_credit_ticks": {},
+  "recorded_steps": 2400,
+  "framework_step_events": 2400,
+  "policy": "dream",
+  "model": "dreamlabs/dream-1-beta",
+  "termination_reasons": [
+    "max_steps"
+  ],
+  "framework_results": {
+    "abstentions": {},
+    "errored_trials": 0,
+    "metrics": {
+      "task_score": 0.0
+    },
+    "total_scenes": 1,
+    "total_trials": 1
+  },
+  "has_infrastructure_error": false,
+  "max_sampled_wrist_force_n": 8.085502624511719,
+  "max_sampled_tilt_deg": 3.3566636096397033,
+  "max_angles_deg": {
+    "lid_deg": 0.1993343484913413,
+    "loop_deg": -6.10862074965024e-06,
+    "button_deg": 0.0038148411612122907
+  },
+  "dream_request_count": 592,
+  "dream_request_attempts": 592,
+  "expired_retry_messages": 0,
+  "tracking_error_rad": [
+    {
+      "max": 0.05405590570562602,
+      "mean": 0.011090524027962725
+    }
+  ],
+  "guard_modifications": 851,
+  "final_log": "adhoc_1550cfc8.json",
+  "scope": "One fixed-layout trial; no success-rate estimate or robustness claim.",
+  "date_utc": "2026-11-08",
+  "registration": {
+    "policy": "dream",
+    "model": "dreamlabs/dream-1-beta",
+    "max_steps": 2400,
+    "rows_per_request": 4,
+    "continuity_gate": true,
+    "control_hz": 20,
+    "object_jitter": 0,
+    "seed": 0,
+    "instruction": "Open the bottle and keep it upright on the table.",
+    "scorer": "task_score",
+    "epochs": 1,
+    "scripted_reference_score": 1.0
+  },
+  "videos": {
+    "dream1.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 640,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 2126448,
+      "sha256": "7a994ba547ea43b7b21f7191ad013945d652e5f295d76689761d0cf5fbb4b7e9",
+      "full_decode_passed": true
+    },
+    "top_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 977429,
+      "sha256": "de9787f0d60d446fe2d279283f61180c88dd1ae9029ac7d1dd75a5199d93c424",
+      "full_decode_passed": true
+    },
+    "left_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 979378,
+      "sha256": "407c112c76c824c7369d1a6b8e98c01527a1575812eb285bf66f1cdcb7f65e5e",
+      "full_decode_passed": true
+    },
+    "right_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 2401,
+      "duration_s": 120.05,
+      "bytes": 1331929,
+      "sha256": "7956a86d2c24f8a3ba59764bea306b1889999cc63030c1b7a28ca5c5d474c6ce",
+      "full_decode_passed": true
+    }
+  },
+  "source_sha256": {
+    "analyze_bottle_evaluation.py": "65c69a8b14a86541d2cff99a35423db09c0d586adda1bc2d25de0a1812c65f4c",
+    "task.json": "3aa9b37c2bdcb39d1d064d0c3211c0e0abaecd3964b83b3aeed202ac4989cf9d",
+    "runner.sh": "48b697f6b256f68906946c8002e15216dba08d66c8e49763789d46c606516243",
+    "dream_with_continuity.py": "e7943ee76a2979a1f6c1af32d28d65864fe50a6afd9c0892856dbb381bfe6c63",
+    "yam/task.py": "848473f4fe2503e58ea34a5503d0237c74c82bec12db27d09b1c49a983b1e854",
+    "yam/probe.py": "796d7b8e32a6ee41a3010af05d7688dc289a23e9ea14a9881137c62d6b719a33",
+    "yam/bottle_runtime.py": "9e8e6fe5b8c9b6c07e900a39b350ac3f57502e63185317b0a891facb87c93e58",
+    "yam/check_reach.py": "a3622639e78e54e7a0ffa7dc4b902aaf2479c6655e04f2600c899e618ab6e8b6",
+    "yam/motion.py": "3910f067d4d376401244b22d57ea81bb23b42b59078fa641d478831144403a15",
+    "yam/test_contract.py": "826f17dcc9a957e81ebef277429d83530ee507eed836ee4dc70744aa4e9dc821",
+    "yam/bottle_usd.py": "2c735626154e15c0313bce4bf56cc4741da25dd20765b96159a6b164d3574682",
+    "detent_bottle/environment.py": "7fb44034d7a3ac618c18f92f32c3aee9627f09d6d2d47c554e987268efabd207",
+    "detent_bottle/__init__.py": "63938a393542cf4a344ecab63d0c98c0ec4e21e2d49c91e996720a4ae904b211",
+    "detent_bottle/bottle_model.py": "78d27cf13301c4c4cfc42466a8d0798afc46cba2fb097d299c7ca35e9db66ea0",
+    "detent_bottle/scoring.py": "8aa1d53626d435287633d60532c67d3e52a5f9cdc2224659d04fb16f4492bc4c",
+    "detent_bottle/rendering.py": "fc4ba95ff192923c23a21113c7d09ab8ff13ea3fe615f2f968e1a1e0024d7a3b",
+    "detent_bottle/inspect_adapter.py": "fe71306332c73b98f57476a915464b65aa0492f5143e77056fb425fa26706f83",
+    "detent_bottle/run.py": "7598c592e21077eec32014a390210ccb608012c45ed0442ae59e78a74813b6ad",
+    "detent_bottle/robot_model.py": "afe94b7a9c085ba584f2b02aa89ae33b4d63b8f98be5d443b98f01975908ac3c",
+    "detent_bottle/scene.py": "b91556c73844da720760761b1ea535807881815f2b0f2d12057b1fa56c49a1ac",
+    "detent_bottle/reference.py": "1893c019bdc5833bfdb30cd8731117d475ac644ea2a3004974399dcda879c17b"
+  },
+  "runtime_source_matches_previous_trial": true,
+  "unchanged_task_python_files": 17,
+  "continuous_server_episode_verified": true,
+  "guard_counts": {
+    "delta-limit": 749,
+    "clamp": 136
+  },
+  "elapsed_wall_seconds": 2108.306,
+  "wall_time_method": "Remote run.exit mtime minus registration.json mtime; includes startup and requests, excludes video export.",
+  "request_idle_seconds": {
+    "min": 2.9081503199995495,
+    "median": 3.0411447820006288,
+    "max": 3.8499036050016002
+  },
+  "interpretation": "One fixed-layout continuous-session rollout with supported rows_per_request4. Arms approach the bottle in reviewed video frames, but loop/lid do not open. This resolves observed repeated session expiry; it does not establish model success or isolate remaining interface/guard effects.",
+  "previous_trial": {
+    "report": "dream1-initial-verification.json",
+    "score": 0.0,
+    "requests": 50,
+    "sessions": 50,
+    "expired_retries": 49,
+    "rows_per_request": 48
+  },
+  "scripted_reference": {
+    "score": 1.0,
+    "steps": 405,
+    "report": "verification.json"
+  },
+  "preflight": {
+    "rows16": "rejected: session changed at second request after12.274s idle; chunk blocked",
+    "rows4": "passed:56steps,6requests,1session,0retries"
+  },
+  "visual_review": [
+    "peak-tilt.png: gripper adjacent to bottle; lid closed",
+    "final.png: bottle remains on table, loop/lid closed"
+  ],
+  "post_recording_table_support_regrade": {
+    "benchmark_score": 0.0,
+    "first_credit_ticks": {},
+    "recorded_steps": 2400,
+    "all_samples_on_table": true,
+    "table_support_regraded_samples": 2400,
+    "table_support_criterion": "Circular base low edge within10mm of tabletop; base centre x in[-.154,.874], y in[-.614,.614]m"
+  },
+  "current_evaluator_sha256": {
+    "detent_bottle/scoring.py": "3bcd49cb5917a397c879e03b5d9843c3b8214728e413ae9b7bcf34b016e78eeb",
+    "detent_bottle/support.py": "ad977d668b06fb332ecbf51d3f18c58d2732bc6ca6ec92679ff7f0da804deda9",
+    "yam/bottle_runtime.py": "7962c967a20c46365412d982cb35fffe508b38b6dc2e75435e1df0f6c78a4ef4"
+  },
+  "scoring_revision_note": "Table-support veto added after recording; all saved samples pass and scores/credit times are unchanged. Physics, controller and recorded observations/actions are unchanged; original recording source hashes remain above."
+}

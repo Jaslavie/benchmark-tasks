@@ -1,0 +1,7 @@
+mujoco==3.3.7
+robosuite==1.4.1
+numpy>=1.24,<2.1
+scipy>=1.10,<1.14
+Pillow>=10,<12
+imageio==2.37.0
+imageio-ffmpeg>=0.5,<0.7

@@ -1,0 +1,21 @@
+{
+  "title": "Load hinged surgical forceps into a sterilizer basket for the steam cycle",
+  "category": "Impact on jobs",
+  "keywords": [
+    "sterile processing",
+    "steam sterilization",
+    "surgical instruments",
+    "hinged instruments",
+    "box lock",
+    "instrument basket"
+  ],
+  "instruction": "Put the two clean forceps in the sterilizer basket, ready for the steam cycle.",
+  "context": "In a hospital sterile processing department, cleaned instruments are assembled into baskets before steam sterilization. Steam-sterilization practice (AAMI ST79) and instrument makers' reprocessing instructions say hinged instruments go in open, ratchets disengaged, so steam reaches the box lock and jaw faces; a ratchet held closed through the heat cycle also stresses the box lock and can crack it. The robot must open each pair (it is not told to), keep it open while carrying it, and lay both flat in one basket without stacking. Unlike TK-LM7FLS (set a bevel gauge's friction hinge to a shown reference angle and carry it), here the target state of the free hinged tool comes from an unstated process rule, and unlike TK-V2GQ8V (return instruments to a tray for the count) the instruments' articulation is what is scored. Done by: medical equipment preparers and sterile processing technicians (O*NET 31-9093.00).",
+  "setup": "Positions in cm from the midpoint between the arm bases (x forward, y left). Prep mats: two fixed grey silicone mats 24 x 11 x 0.3 cm centred at x 25.5, y 21.5 and y -21.5. Forceps: two loose pairs of 20 cm training-scale stainless steel forceps (like Rochester-Pean forceps), each two 35 g shanks (a 5 cm jaw, a 1.6 cm box lock, an 8 x 0.8 cm handle bar 0.8 cm tall and a 2.6 cm finger ring) joined at the box lock by a pivot with friction (0.03 N*m), opening from 0 (closed, ratchet engaged) to a 25 deg stop. Each lies closed, flat on its mat, pivot at x 30, y 21.5 or -21.5, jaws pointing forward; the two handle bars are 2.8 cm apart. Basket: a fixed perforated stainless steel sterilizer basket, inside 24 x 32 cm with 3 cm walls (0.3 cm thick) and a 0.2 cm floor, centred at x 33, y 0.",
+  "scoring": "From the episode's recorded poses (the trial video on a real rig). Per pair: in the basket when both shanks are wholly inside its walls, flat (tilted under 15 deg), with their lowest point within 4 mm of its floor (not stacked), let go (both grippers 2.5 cm clear) and still; open when the shanks are at least 15 deg apart (a jaw-tip gap of about 15 mm). 1.0 both in and open, success when held 1 s; 0.6 one in and open, the other in but closed; 0.4 only one in and open; 0.2 both in but closed; 0.1 one in, closed; else 0. Scored at the last step. Possible scores: 0, 0.1, 0.2, 0.4, 0.6, 1.0.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Close each pair (ratchet engaged) and lay it flat on its mat with the pivot on the mark, jaws forward; the mats and basket do not move.",
+  "fidelity": "Rigid boxes, one shared friction (1.2 static, 1.0 dynamic). Each pair is two rigid shanks on a PhysX revolute joint between two free bodies, with Coulomb pivot friction (0.03 N*m) and a 25 deg stop; there is no ratchet to release (closed means under 15 deg). The two shanks of a pair do not collide with each other. Instruments are scaled up and simplified (square rings, straight bars).",
+  "scores": "Dream-1 run: 0; demo: 1.0",
+  "media": "M-8M9PLR"
+}

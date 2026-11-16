@@ -1,0 +1,149 @@
+{
+  "date_utc": "2026-11-08",
+  "scope": "Targeted submission checks; nominal layout only, not exhaustive robustness or exploit certification.",
+  "checks": {
+    "task_board_review": true,
+    "scored_media_verified": true,
+    "isolated_task_reproduction": true,
+    "press_only_interlock_probe": true,
+    "table_support_regrade": true,
+    "live_support_measurement": true
+  },
+  "current_source_sha256": {
+    "run.py": "24b62b3544bfe486e7f3e198b7315474ae1bdcd524fb99301f7f3100cb5fbfd4",
+    "task.py": "0f3f24e393efa3562c6549ed8d96dd0b867d54a0a19ee7e31390b419ff7330bc",
+    "test_support.py": "644f18e66e07a3be539f2f7f984b0ae360da092efd2039ae9102b15fe60435d8",
+    "test_inspect_adapter.py": "20793583c9a0438c6ddc14b7017be5bc2d8d46c7da18a497c701804d4321dce0",
+    "check_submission.py": "a105f9186a400c2d85503ff226395fcbf35dda12b9f482940dc017fa9c10f1d3",
+    "test_task.py": "1dfdaf90a6bd1452a65a137344af8850411d0b511f94092040607975dcac4fc0",
+    "yam/bottle_runtime.py": "7962c967a20c46365412d982cb35fffe508b38b6dc2e75435e1df0f6c78a4ef4",
+    "yam/motion.py": "3910f067d4d376401244b22d57ea81bb23b42b59078fa641d478831144403a15",
+    "yam/audit_press_only.py": "cfadaf021d3c45c0008e726986fe25e195ede6130d04350704aba267768ed32a",
+    "yam/task.py": "848473f4fe2503e58ea34a5503d0237c74c82bec12db27d09b1c49a983b1e854",
+    "yam/test_contract.py": "e46afa1340e37979d00137f1604bc1181588aa2a973254a3e95eb829f8e4f93a",
+    "yam/probe.py": "796d7b8e32a6ee41a3010af05d7688dc289a23e9ea14a9881137c62d6b719a33",
+    "yam/dream_continuity.py": "e7943ee76a2979a1f6c1af32d28d65864fe50a6afd9c0892856dbb381bfe6c63",
+    "yam/analyze_evaluation.py": "e60fd07d3944d17407862a54475bd25ad42794c1503d298c5e101dad162cbe35",
+    "yam/bottle_usd.py": "2c735626154e15c0313bce4bf56cc4741da25dd20765b96159a6b164d3574682",
+    "yam/check_reach.py": "a3622639e78e54e7a0ffa7dc4b902aaf2479c6655e04f2600c899e618ab6e8b6",
+    "yam/test_continuity.py": "e8b58e02e068f2e412b8fcfc54ed7dd9df8f96dba5eb93ae8b52bcb97ad5240b",
+    "yam/evaluate.sh": "7de36d3bb0c180d5aeffdb7f7d4c21cf6b77286e09ec545d27dfa30a0b142fa0",
+    "detent_bottle/inspect_adapter.py": "fe71306332c73b98f57476a915464b65aa0492f5143e77056fb425fa26706f83",
+    "detent_bottle/run.py": "7598c592e21077eec32014a390210ccb608012c45ed0442ae59e78a74813b6ad",
+    "detent_bottle/rendering.py": "fc4ba95ff192923c23a21113c7d09ab8ff13ea3fe615f2f968e1a1e0024d7a3b",
+    "detent_bottle/environment.py": "7fb44034d7a3ac618c18f92f32c3aee9627f09d6d2d47c554e987268efabd207",
+    "detent_bottle/support.py": "ad977d668b06fb332ecbf51d3f18c58d2732bc6ca6ec92679ff7f0da804deda9",
+    "detent_bottle/robot_model.py": "afe94b7a9c085ba584f2b02aa89ae33b4d63b8f98be5d443b98f01975908ac3c",
+    "detent_bottle/scoring.py": "3bcd49cb5917a397c879e03b5d9843c3b8214728e413ae9b7bcf34b016e78eeb",
+    "detent_bottle/__init__.py": "63938a393542cf4a344ecab63d0c98c0ec4e21e2d49c91e996720a4ae904b211",
+    "detent_bottle/reference.py": "1893c019bdc5833bfdb30cd8731117d475ac644ea2a3004974399dcda879c17b",
+    "detent_bottle/bottle_model.py": "78d27cf13301c4c4cfc42466a8d0798afc46cba2fb097d299c7ca35e9db66ea0",
+    "detent_bottle/scene.py": "b91556c73844da720760761b1ea535807881815f2b0f2d12057b1fa56c49a1ac"
+  },
+  "tests": {
+    "scoring": 6,
+    "table_support": 5,
+    "yam_contract": 8,
+    "continuity": 5,
+    "total": 24
+  },
+  "novelty": {
+    "board": "https://tasks.robocurve.org/board",
+    "displayed_total": 1076,
+    "accepted": 18,
+    "pending_or_planned": 1058,
+    "submission_ids_visible": 986,
+    "method": "Searched full visible index for bottle, safety loop, rocker, detent and flip-top; read nearest task details and scanned previous-cohort bottle ideas.",
+    "closest": [
+      {
+        "id": "TK-Z97WAY",
+        "status": "Pending review",
+        "title": "Take the cap off a child-resistant medicine bottle",
+        "mechanism": "Axial push plus anticlockwise cap rotation; simulated software release after sufficient pressed rotation."
+      },
+      {
+        "id": "TK-6WMEW3",
+        "status": "Pending review",
+        "title": "Open a bottle either way and pour it into a cup",
+        "mechanism": "Either unscrew cap or simple detent flip-top; main score is poured contents."
+      },
+      {
+        "id": "TK-RSPMXH",
+        "status": "Accepted",
+        "title": "Release a two-latch lid and lift it out with both hands",
+        "mechanism": "Simultaneous opposing prismatic latches and detached lid placement."
+      }
+    ],
+    "distinction": "Sequential hinged U safety loop and separate spring-return rocker on a free bottle, with passive hook/receiver contacts; no unscrew or pouring.",
+    "limitation": "No identical loop/rocker bottle found in reviewed visible descriptions. Reviewer novelty judgment remains open; no exhaustive search of all external benchmark implementations."
+  },
+  "media": {
+    "model_run.mp4": {
+      "bytes": 2126448,
+      "sha256": "7a994ba547ea43b7b21f7191ad013945d652e5f295d76689761d0cf5fbb4b7e9",
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "frames": 2401,
+      "duration_s": 120.05,
+      "fully_decoded": true
+    },
+    "demo.mp4": {
+      "bytes": 543478,
+      "sha256": "317585c82ee439c260b7fdefac9a319a52462f5a552b8661c47fe003fef10683",
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "frames": 406,
+      "duration_s": 20.3,
+      "fully_decoded": true
+    },
+    "setup.png": {
+      "bytes": 46470,
+      "sha256": "675d47af58ef316508c06009862b836ef90296e7580123ffcbc15a613353de27"
+    }
+  },
+  "press_only_probe": {
+    "steps": 320,
+    "score": 0.0,
+    "max_lid_deg": 0.19936967337595496,
+    "max_loop_deg": -5.857041215234721e-06,
+    "max_button_deg": 12.706352884683753,
+    "max_sampled_wrist_force_n": 10.54629135131836,
+    "limitation": "One omitted-loop contact trajectory, not an exhaustive alternative-strategy audit."
+  },
+  "live_support_smoke": {
+    "steps": 20,
+    "framework_errors": 0,
+    "all_samples_on_table": true,
+    "measurement_serialization_passed": true,
+    "table_support_derived_live": true
+  },
+  "table_support_regrade": {
+    "demo_samples": 405,
+    "demo_score": 1.0,
+    "model_samples": 2400,
+    "model_score": 0.0,
+    "all_samples_pass": true,
+    "physics_controller_changes": false
+  },
+  "physical_source_verification": {
+    "unchanged_files": [
+      "yam/task.py",
+      "yam/bottle_usd.py",
+      "yam/motion.py",
+      "detent_bottle/bottle_model.py"
+    ],
+    "unchanged_runtime_functions": [
+      "spawn",
+      "arena_object",
+      "configure_passive",
+      "physics_callback",
+      "patch_scene"
+    ]
+  },
+  "limitations": [
+    "No randomized robustness or success-rate sweep.",
+    "No real-hardware or dynamic force calibration.",
+    "Partial-credit loopholes beyond tested cases may remain; contact model is approximate.",
+    "Novelty acceptance remains a reviewer judgment."
+  ]
+}

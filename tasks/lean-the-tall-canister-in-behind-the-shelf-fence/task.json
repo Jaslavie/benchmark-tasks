@@ -1,0 +1,21 @@
+{
+  "title": "Lean a tall canister in over the shelf fence under a low shelf and stand it up",
+  "category": "Impact on jobs",
+  "keywords": [
+    "shelf stocking",
+    "product stop",
+    "headroom",
+    "tilted grip",
+    "reorientation",
+    "layout lots"
+  ],
+  "instruction": "Stand the canister upright on the lower shelf, behind the fence.",
+  "context": "Done by: stockers and order fillers (O*NET 53-7065). Store and chiller shelves have a front fence under a shelf above. Upright, the canister needs 185 mm to pass over the fence and the shelf gives 170, so it is leaned, its base passed over the fence and stood up behind it; laid down it is not stocked. Unlike TK-UKHLKJ (a tall box that ends lying in a low cupboard) and TK-97ATXT (items under a height line), the height limit is a passage and the item ends upright.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' is the robot's left, heights are above the table top, and the midline is halfway between the arm bases. Shelf unit (fixed, white-painted board), its centre line 22 cm left of the midline: a lower shelf 10 mm thick and 220 mm wide, its front edge 34.0 cm in front of the arm bases and its back edge at 43.6 cm, top 10 mm up; on its front edge an orange-painted fence 6 mm thick, 200 mm long and 35 mm tall (front face at 34.0 cm, inner face at 34.6 cm); two side walls 10 mm thick and 170 mm tall, inner faces 100 mm either side of the centre line; a back wall 10 mm thick and 170 mm tall, its front face 80 mm behind the fence's inner face; and a grey-painted upper shelf 15 mm thick and 220 mm wide whose underside is 170 mm above the lower shelf, running from 40 mm behind the fence's inner face back to the back wall. Canister (loose, rigid, 0.30 kg, painted rigid plastic): a blue square body 50 x 50 mm and 150 mm tall, with a flat black carry handle moulded on top along its front edge, 12 mm thick front to back, 40 mm wide and 18 mm tall, centred side to side on the line of the front face (half of its thickness overhangs). It stands upright on the table, handle toward the robot. Lot A: the canister's body centred 24 cm in front of the arm bases and 16 cm left of the midline. Lot B: 20 cm in front and 5 cm left. Nothing else is on the table. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Per trial, after the robot has let go (no gripper within 5 mm of the canister). Score 1.0 if the canister stands on its base on the lower shelf behind the fence, still for 3 s: all four corners of its base behind the fence's inner face and between the side walls, its lowest base corner within 2 mm of the lower shelf, and its body tilted at most 5 degrees from upright. Score 0.5 if, still at the end of the trial, its base is placed the same way but it leans back toward the robot onto the fence, more than 5 and at most 30 degrees (top within 45 degrees of straight back): the base is past the stop under the low shelf, and the stand-up step is missing. Score 0 otherwise, including lying on its side, leaning any other way, standing on or in front of the fence, any base corner over the fence, on the table, or still held. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Take the canister out and stand it upright on the table with its handle toward the robot, at the lot's spot (lot A: 24 cm in front, 16 cm left of the midline; lot B: 20 cm in front, 5 cm left). Nothing is consumed. Run with -E object_jitter=0 and --epochs 2.",
+  "fidelity": "Rigid bodies. The canister is a plain box with a moulded carry handle, as on a jerrycan; the parallel gripper holds the handle across its thickness, so a lean does not turn the canister in the pads. Gripped on its sides it can turn in the pads; gripped front and back, the far finger is behind the canister where the upper shelf is. The fence is fixed to the shelf. Masses and friction (1.0) are simulator values. The two lots stop one replayed layout, not a memorised replay of both.",
+  "scores": "Dream-1 run: 0.0 (mean of lots A and B); demo: 1.0 in each lot",
+  "media": "M-GEG3WE"
+}

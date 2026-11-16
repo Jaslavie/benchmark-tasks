@@ -1,0 +1,25 @@
+{
+  "title": "Clean an SC fibre connector's ferrule on a cassette cleaner, then latch it into a panel adapter",
+  "category": "Impact on AI timelines",
+  "keywords": [
+    "bimanual",
+    "fibre optic",
+    "SC/UPC connector",
+    "ferrule end face",
+    "cassette cleaner",
+    "contamination avoidance",
+    "process order",
+    "push-pull latch",
+    "patch panel",
+    "data center"
+  ],
+  "instruction": "Clean the blue fibre connector on the cleaner, then latch it into the panel's SC adapter.",
+  "context": "Contaminated end faces are \"the number one cause of fiber related problems and test failures in data centers\" (Fluke). Before mating, technicians wipe the ferrule once along a cassette cleaner's tape \"in the direction of the arrow\" (Cisco), one hand holding the cleaner, and mate it without the end face touching anything. AI clusters run very many such links. Tested: a valid one-way wipe, then a no-touch path into a tight adapter until it latches.",
+  "setup": "Positions in cm from the midpoint between the arm bases on the table (x forward, y left). Patch cord: yellow 3 mm cord, 28 cm, its far end held in a black cord clip taped at x 16, y -12 (the cord runs off to the switch); the blue SC/UPC connector (9 x 7.4 x 25 mm housing, white 2.5 mm ferrule protruding 2 mm, black boot) lies loose at its other end near x 44, y -8, pointing away from the robot. Cleaner: a cassette end-face cleaner (125 x 85 x 35 mm, 150 g, CLETOP-S size) standing loose on its long edge, centre x 30, y +25, turned 60 deg so its front face looks back towards the robot and to the left; white tape window 30 x 10 mm near the top of that face, towards its right-hand end, 52-82 mm above the table, arrow beside it pointing down. Panel: a 1U steel patch-panel section 12 cm wide on two posts, face at x 42; one beige SC simplex adapter (27.4 mm, 0.25 mm per side around the housing, 1 mm x 45 deg lead-in) with its port centre at y -20, 6 cm above the table; a blue connector is already latched into its back.",
+  "scoring": "Score 0 for the trial if: the connector's ferrule enters the adapter before a valid clean; or, after the valid clean, the ferrule touches anything except the cleaner's tape, the adapter's sleeve or the far ferrule (table, cleaner body, gripper, panel, adapter face or walls). Valid clean: the ferrule end face pressed flat on the tape (axis within 10 deg of the tape's normal, whole face on the tape, in contact), sliding in one stroke along the arrow at least 21 mm (end to end of the 30 mm window) without moving back more than 1.5 mm. Otherwise: 1.0 if the connector is latched (both detent pins snapped into its side notches, housing home) and no gripper holds it; 0.75 latched but still held; 0.5 in the adapter, not latched; 0.25 cleaned, not in the adapter. Judged from video (wrist cameras see the ferrule).",
+  "run_limit": "2000 steps (100 s at 20 Hz)",
+  "reset_notes": "Pull the connector out of the adapter (draw back its outer housing to unlatch). Advance the cleaner's tape (press the lever) so the window shows fresh tape. Stand the cleaner on its long edge at its tape marks, turned as marked. Lay the connector at its mark, pointing away from the robot, its cord straight to the clip. Panel, posts and clip are fixed.",
+  "fidelity": "True-size SC parts (Hirose HSC catalogue; 2.5 mm ferrule per IEC 61754-4): 9 x 7.4 mm housing, 27.4 mm adapter, 0.25 mm per side in the channel. Simplified: the latch is two sprung detent pins (about 1 N each; Hirose lists up to 19.6 N); the 2 mm ferrule protrusion and 30 x 10 mm tape window are estimates; the sleeve is a rigid bore; no ferrule spring; square ferrule collider; the cleaner's shutter and lever do not work; clean is judged from contact, angle and stroke, not dust.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-NXW6SS"
+}

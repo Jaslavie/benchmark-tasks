@@ -1,0 +1,22 @@
+{
+  "title": "Slide a linear-guide carriage onto its rail past a spring plunger",
+  "category": "Impact on AI timelines",
+  "keywords": [
+    "linear guide",
+    "carriage",
+    "spring plunger",
+    "detent",
+    "slide fit",
+    "assembly",
+    "undercut rail"
+  ],
+  "instruction": "Pick up the blue carriage by its post, fit it onto the open end of the grey rail, and push it along the rail past the orange plunger until it touches the end stop. Then let go and keep both fingers at least 3 cm from the post.",
+  "context": "Linear guide carriages on robot gantries, 3D printers and wafer handlers are slid onto their rails by hand during assembly. A ball-plunger detent marks the seated position, and a carriage left short of it can drift. The task tests a part that can only go on from the open end (undercut lips, 1 mm clearances), a push through a spring detent that resists, and a clean release. The score is read from the final state only, so a carriage that is lifted off again scores 0.",
+  "setup": "Positions in cm from the arm-base line (x forward) and the midline (y left), on the table, one fixed layout matching the screenshot. Rail: a grey T-rail (rigid, 6 kg, friction 1.2) 19.5 cm long on a dark blue mat (27 x 7 x 0.2 cm), axis along x at y -15, from x 22.0 (open end, facing the arms) to x 41.5; neck 0.8 cm wide, head 1.6 cm wide, top 1.4 cm above the mat, with a small lead-in tab at the open end. An orange end stop (2 x 2.8 x 3 cm, same part) stands at x 41.5 to 43.5. Orange spring plunger: 1 cm wide, back face at x 37.5 (4 cm before the stop face), ramped top rising 1 mm over 1.2 cm to 1 mm above the head, 0.2 N/mm spring, 4 mm travel. Carriage: blue plastic, 80 g, 3.6 cm long x 2.6 cm wide, plate 1.4 cm above its base, channel and lips fitting the rail with 1 mm clearance, and a 3 cm wide grip post 6 cm tall; it stands on a yellow mat (10 x 10 x 0.2 cm) centred at x 26, y +2 (26 cm from the base line, 2 cm left of the midline), lengthwise along x. Both mats are fixed.",
+  "scoring": "Computed from the final state only, nothing is remembered. 1.0 if at the end the carriage is on the rail (guide lips under the rail head, level within 3 degrees, lateral offset 3 mm or less), wholly past the plunger with the plunger back up behind it, its front face within 3 mm of the end stop, and released (both fingers at least 90% open and at least 3 cm from the post) and still (moving less than 1 mm) for the last 1 s. 0.5 if it is on the rail at the end but not all of that holds (short of the plunger, held, or moving). 0 if it is not on the rail at the end, whatever happened earlier.",
+  "run_limit": "1,200 steps (1 minute at 20 Hz)",
+  "reset_notes": "Lift the carriage off the rail's open end and set it on the yellow mat, lengthwise along x; the plunger resets itself.",
+  "fidelity": "Rigid bodies from boxes and one cylinder; rail, end stop and plunger housing are one 6 kg part that stays put. The plunger is a prismatic joint with a spring drive (0.2 N/mm, 4 mm travel) and rises only 1 mm into the carriage's path, so its force is far below a real ball plunger. Friction is 1.2 everywhere, clearances 1 mm, contact offsets 0.5 mm. No contact force cap is enforced.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-UT9439"
+}

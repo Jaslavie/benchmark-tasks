@@ -1,0 +1,22 @@
+{
+  "title": "Carry a stack of three boxes onto a shelf in one trip, squeezed between both arms",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bimanual",
+    "two-arm carry",
+    "compression grasp",
+    "stack",
+    "moving house",
+    "boxes",
+    "shelf"
+  ],
+  "instruction": "Move the stack of three boxes onto the shelf in one go, keeping them stacked the whole time: do not lift any box off the one below it.",
+  "context": "Moving house or unpacking a delivery, people carry a short stack of boxes in one trip by squeezing the bottom box from both sides while the boxes above ride on it. The bottom box is wider than one gripper opens, so both arms must hold it. Unlike TK-4E4YZF (one wide box squeezed and lifted) and pilots TK-CTCQVY and TK-TH7NBJ (carries of one object), the hard part here is keeping two loose boxes on top in place through the squeeze, lift, carry and set-down.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Boxes (loose, light-to-mid brown cardboard, modelled as solid rigid blocks): bottom box 200 mm wide (left to right), 120 mm deep (front to back) and 50 mm tall, 120 g; middle box 120 x 120 mm and 35 mm tall, 60 g; top box 80 x 80 mm and 30 mm tall, 40 g. They stand in one stack, edges square to the table, each box centred on the one below, the stack's centre 20.0 cm in front of the arm bases on the midline: the bottom box spans 14.0 to 26.0 cm in front of the bases and 10 cm either side of the midline. The stack's top is 115 mm high. Shelf (fixed, grey painted wood, a solid block): 160 mm deep, 240 mm wide and 60 mm tall, spanning 29.0 to 45.0 cm in front of the bases and 12 cm either side of the midline, so its front face is 30 mm beyond the bottom box's far face. The gripper opens to at most 94 mm between its pads, less than either footprint side of the bottom box. Nothing else is on the table.",
+  "scoring": "Judged from the video and a ruler. Limits are inclusive.\nBroken stack (score 0 for the whole trial): at any moment an upper box lifts more than 5 mm off the box below, slides more than 25 mm off its centre, or tilts more than 15 degrees. So carrying the boxes one at a time, or taking the upper boxes off and putting them back, scores 0.\nStanding stack: all three boxes level (within 5 degrees) and still, each upper box resting on the one below.\n1.0: never broken; standing on the shelf with the bottom box fully on the shelf top; each upper box within 10 mm of centre on the box below.\n0.5: never broken; standing on the shelf with the bottom box's centre over the shelf top, but it overhangs an edge or an upper box is 10 to 25 mm off centre.\n0.25: never broken; the stack was lifted as one (bottom box at least 20 mm off the table) and now stands on the table at least 30 mm from where it started, upper boxes within 25 mm of centre.\n0 otherwise (stack not lifted, held more than 1 mm above the shelf, any box knocked off, or broken). Setting the stack down and regripping is allowed. The trial ends at 1.0 once that holds for 1 s. Exact definitions are in README.md.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "Restack the three boxes at the start position, edges square to the table, each centred on the one below. Nothing is consumed.",
+  "fidelity": "Approximate. The boxes are solid rigid blocks of the stated mass, smaller than moving boxes, with no flaps, contents or give, and rubber-like friction (1.2 static, 1.0 sliding), well above cardboard's, so upper boxes slide less than real ones. The upper boxes are narrower than the bottom one, so a squeeze on its sides leaves them free; the closed fingers widen upward, so the scripted squeeze presses on its top edges. The shelf is a solid block.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-RN4Y63"
+}

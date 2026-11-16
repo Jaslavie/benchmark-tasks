@@ -1,0 +1,21 @@
+{
+  "title": "Lock the spring tongs and put them away in the cutlery tray",
+  "category": "Societal relatability",
+  "keywords": [
+    "home kitchen",
+    "putting away",
+    "spring tongs",
+    "pull-tab lock",
+    "bimanual",
+    "drawer organizer"
+  ],
+  "instruction": "Put the tongs away in the cutlery tray, locked shut.",
+  "context": "Putting kitchen utensils away after washing up is an everyday home chore. People lock spring tongs shut before storing them: unlocked, they spring open in the drawer, take up the space of several utensils and snag the drawer when it is shut. Open, these tongs are also wider than the tray's long slot, so they have to be held shut while the pull tab is pulled to lock them.",
+  "setup": "World frame for this text: 'in front' is away from the arm bases, 'left' and 'right' are from the robot's view, heights are above the table top, and the midline is halfway between the two arm bases. Spring kitchen tongs (loose, 85 g in all), lying flat: a stainless hinge knuckle 20 mm across and 22 mm tall (15 g); two stainless arms (32 g each, with their heads), each a strip 4 mm thick and 20 mm deep standing on its edge, from 8 to 195 mm from the hinge axis, with a red silicone head 25 mm long, 8.5 mm thick and 22 mm deep at its tip, 220 mm from the hinge axis to the heads' ends. Each arm swings on its own pin 6 mm either side of the centre line, sprung open (0.8 N m/rad each, preloaded) to a stop 10 degrees out, so the open heads span 94 mm outside; squeezed shut, the heads meet and the arms are 18 mm across outside. A black nylon pull tab (6 g) sticks out of the hinge end: a stem and a grip 16 mm long, 14 mm wide and 16 mm tall (4 to 20 mm up), its end 34 mm behind the hinge axis; it slides out up to 10 mm against a 40 N/m spring. Pulled out at least 7 mm while both arms are shut, it locks them shut and stays out; pushed back in below 3 mm, it unlocks them. The tongs: the hinge axis 20.0 cm in front of the bases and 10.0 cm right of the midline, the tongs pointing left along the left-right line (heads 12 cm left of the midline), open. Cutlery tray (fixed, as if held in its drawer; white polypropylene, 6 mm walls, 4 mm floor, 50 mm tall): outer 160 mm front to back (32.4 to 48.4 cm in front of the bases) and 302 mm left to right, centred on the midline. Along its near side, a long compartment 65 mm front to back (33.0 to 39.5 cm) and 290 mm long inside; behind a divider, two short compartments, each 77 by 142 mm inside. Nothing else is on the table.",
+  "scoring": "Per trial, judged on the tongs once the robot has let go (no gripper or finger within 5 mm of them) and they have stopped moving. Locked: the tab is out at least 7 mm and both arms are within 0.03 rad of shut (heads under about 15 mm apart). In the long compartment: no part of the tongs is outside its walls (1 mm allowed for contact), none is above its rim, and the tongs' lowest point is within 3 mm of its floor. Score 1.0: locked and in the long compartment, held for 2 s. Score 0.5: locked, let go and still anywhere else on the counter or tray. Score 0.25: in the long compartment but not locked (squeezed in and let go, so they spring open against its walls). Score 0: anything else, including open tongs lying across the tray, tongs off the table, tongs still held, or tongs still moving.",
+  "run_limit": "1,200 steps (60 seconds at 20 Hz)",
+  "reset_notes": "1. Push the tab fully in so the tongs spring open against their stops. 2. Lay the tongs flat on the counter with the hinge axis 20.0 cm in front of the arm bases and 10.0 cm right of the midline, pointing left. 3. Leave the tray where it is, empty. Nothing is consumed. Run with -E object_jitter=0.",
+  "fidelity": "True-size tongs and tray. The arms are straight rigid strips; the spring is two hinge springs. The pull tab's catch engages when the tab is out at least 7 mm with both arms shut, then holds the arms shut and the tab out until the tab is pushed back in below 3 mm. The tray is fixed in place, as in a drawer. Masses and friction are simulator values.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-Z5ZDHY"
+}

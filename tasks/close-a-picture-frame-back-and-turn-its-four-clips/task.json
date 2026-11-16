@@ -1,0 +1,21 @@
+{
+  "title": "Close a picture frame's back: press it flush with one hand while the other turns its clips, swapping hands",
+  "category": "Societal relevance",
+  "keywords": [
+    "bimanual",
+    "picture frame",
+    "turn buttons",
+    "spring-back",
+    "hand swap",
+    "household"
+  ],
+  "instruction": "Close the back of the picture frame: with one hand press its back down flush and keep it there while the other hand turns the two brass clips on its side a quarter turn each, over the back's edge; then swap, pressing the back down with the second hand while the first turns the two clips on the other side. Let go, leaving the back held down by its four clips, and take both arms back to where they started.",
+  "context": "Framing a picture at home or in a frame shop: the mount, picture and backing are thicker than the frame's rebate, so the backboard springs up until it is pressed down, and the turn buttons can only be swung over it while it is held flush. One hand presses, the other turns, and the hands swap sides.",
+  "setup": "A table in front of two arms (bases 61 cm apart), seen by one overhead camera and a camera on each wrist. Distances are measured forward from the line between the arm bases and sideways from the midpoint between them. (1) A green wool felt mat, 38 x 48 cm, centred 30 cm forward on the centre line. (2) On it, face down, a picture frame of oak moulding (800 g): 30 cm front to back, 40 cm across, the moulding 3 cm wide and 2.5 cm thick, centred on the mat. (3) In the frame, its back: a brown hardboard backboard (23.6 x 33.6 cm) on the white card mount and foam behind it, 1.2 cm thick together, 250 g. It stands 12 mm proud of the frame's back until pressed down (about 9 N presses it flush) and springs back up, tilting level, when let go. (4) Four brass turn buttons (3.2 x 1.2 cm, 3 mm thick, each with a raised knob near its end) on the frame's back, two on each long side, 8 cm in front of and behind the middle, each on the middle line of its side's moulding. Each lies along the moulding (open) and swivels on its screw, staying where it is left; turned a quarter turn inward it reaches 1.4 cm over the back's edge, but a back standing proud blocks it. The layout is the same in every trial, as in the screenshot.",
+  "scoring": "Judged at the end of the trial. 1.0: all four clips turned over the back (each at least 80 degrees from where it lay), the back flush (its middle within 3 mm of seated, tilted at most 1.5 degrees) and both hands off it (each gripper's fingertip centre, TCP, at least 5 cm above the back or off the frame) and both arms back where they started (each TCP within 5 cm of its start); 0.5: all four clips over and the back flush, otherwise; 0.25: at least two clips turned over; else 0.0. The trial ends at the run limit, or once the full score has held for 1 s with the frame, its back and the clips still.",
+  "run_limit": "1,600 steps (80 s at 20 Hz)",
+  "reset_notes": "Turn the four clips back along the frame; the back springs up by itself.",
+  "fidelity": "Rigid-body simulation (Isaac Sim 6.1, PhysX, 20 Hz control). Simplified: the backboard, mount and foam are one rigid slab on a joint that lets it rise 12 mm and tilt up to 6 degrees, sprung up and back level; each clip is a hinge on its screw with a spring the task file moves to where the clip is left; the glass and the picture are not modelled. Cameras 1280 x 704 (Dream-1 sees 320 x 176).",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-MNLMU8"
+}

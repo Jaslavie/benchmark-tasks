@@ -1,0 +1,196 @@
+{
+  "status": "Nominal fixed-layout official Inspect Robots scripted trial verified; Dream-1 not run",
+  "date": "2026-11-07",
+  "result": {
+    "score": 1.0,
+    "success": true,
+    "failure": null,
+    "steps": 405,
+    "simulated_seconds": 20.25
+  },
+  "official_log": "adhoc_c035d817.json",
+  "first_credit_ticks": {
+    "0.25": 251,
+    "0.5": 402,
+    "1.0": 405
+  },
+  "max_wrist_force_n": 15.488879203796387,
+  "max_tilt_deg": 2.73516386765296,
+  "final_angles_deg": {
+    "lid_deg": 116.58410279197578,
+    "loop_deg": 180.00001866933468,
+    "button_deg": 4.935927984376686
+  },
+  "all_force_samples_measured": true,
+  "videos": {
+    "top_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 406,
+      "duration_s": 20.3,
+      "bytes": 149738,
+      "sha256": "b0ed7df597cdf2d2dc5fdfd35a6149efa281924a89997b60490f4eb83c96190f",
+      "full_decode_passed": true
+    },
+    "demo.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 640,
+      "height": 176,
+      "frames": 406,
+      "duration_s": 20.3,
+      "bytes": 543478,
+      "sha256": "317585c82ee439c260b7fdefac9a319a52462f5a552b8661c47fe003fef10683",
+      "full_decode_passed": true
+    },
+    "left_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 406,
+      "duration_s": 20.3,
+      "bytes": 129209,
+      "sha256": "0ad2154982e3e264c3edc9a30b94ca1be9841286be111c5bc81193133cf8fdd5",
+      "full_decode_passed": true
+    },
+    "right_cam.mp4": {
+      "codec": "h264",
+      "pixel_format": "yuv420p",
+      "width": 320,
+      "height": 176,
+      "frames": 406,
+      "duration_s": 20.3,
+      "bytes": 206946,
+      "sha256": "0002d12a843fecdfab28a114744ba857519f076001ee28dd4dd95f7b60617c1e",
+      "full_decode_passed": true
+    }
+  },
+  "source_sha256": {
+    "bottle_runtime.py": "9e8e6fe5b8c9b6c07e900a39b350ac3f57502e63185317b0a891facb87c93e58",
+    "motion.py": "3910f067d4d376401244b22d57ea81bb23b42b59078fa641d478831144403a15",
+    "task.py": "848473f4fe2503e58ea34a5503d0237c74c82bec12db27d09b1c49a983b1e854",
+    "test_contract.py": "826f17dcc9a957e81ebef277429d83530ee507eed836ee4dc70744aa4e9dc821",
+    "probe.py": "796d7b8e32a6ee41a3010af05d7688dc289a23e9ea14a9881137c62d6b719a33",
+    "bottle_usd.py": "2c735626154e15c0313bce4bf56cc4741da25dd20765b96159a6b164d3574682",
+    "check_reach.py": "a3622639e78e54e7a0ffa7dc4b902aaf2479c6655e04f2600c899e618ab6e8b6"
+  },
+  "source_hashes_match_current": true,
+  "physics_dt_s": 0.001,
+  "control_hz": 20,
+  "object_jitter": 0,
+  "official_seed": 0,
+  "note": "406 video frames include the initial observation plus405actions; no extra success-hold frames were added.",
+  "framework_results": {
+    "abstentions": {},
+    "errored_trials": 0,
+    "metrics": {
+      "task_score": 1.0
+    },
+    "total_scenes": 1,
+    "total_trials": 1
+  },
+  "modified_guard_events": 8,
+  "runtime": {
+    "gpu": "NVIDIA L40S",
+    "driver": "565.57.01",
+    "isaac_sim": "6.1.0.0",
+    "arena_revision": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf",
+    "yam_revision": "0059d02a1a91bc6834c1d0846022891df0c78730",
+    "launchable_revision": "25a2963d10451265dd2a6cbddea69d6a3b3b9b0d"
+  },
+  "force_calibration": {
+    "per_arm": {
+      "left": {
+        "applied_world_downward_force_n": 10.0,
+        "baseline_n": 6.793749809265137,
+        "loaded_n": 16.79374885559082,
+        "recovered_n": 6.793750762939453,
+        "increment_n": 9.999999046325684,
+        "passed": true
+      },
+      "right": {
+        "applied_world_downward_force_n": 20.0,
+        "baseline_n": 6.793749809265137,
+        "loaded_n": 26.79375,
+        "recovered_n": 6.793750762939453,
+        "increment_n": 20.000000190734863,
+        "passed": true
+      }
+    },
+    "passed": true
+  },
+  "validation_scope": "Two successful fixed-layout robot-only trials (one direct and one official CLI); no model run, randomization sweep or adversarial construct-validity audit.",
+  "model_geometry": {
+    "rigid_links": [
+      "bottle",
+      "lid",
+      "button",
+      "safety_catch"
+    ],
+    "free_base": true,
+    "source_contact_pairs": 294,
+    "colliders": 73,
+    "self_collision_enabled": true,
+    "contact_offset_m": 0.0001,
+    "joints": [
+      {
+        "name": "lid_hinge",
+        "axis": [
+          -1.0,
+          0.0,
+          0.0
+        ],
+        "limits_radians": [
+          0.0,
+          2.15
+        ]
+      },
+      {
+        "name": "button_hinge",
+        "axis": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "limits_radians": [
+          0.0,
+          0.42
+        ]
+      },
+      {
+        "name": "catch_hinge",
+        "axis": [
+          1.0,
+          0.0,
+          0.0
+        ],
+        "limits_radians": [
+          0.0,
+          3.141593
+        ]
+      }
+    ],
+    "direct_object_policy_controls": false
+  },
+  "post_recording_table_support_regrade": {
+    "benchmark_score": 1.0,
+    "first_credit_ticks": {
+      "0.25": 251,
+      "0.5": 402,
+      "1.0": 405
+    },
+    "recorded_steps": 405,
+    "all_samples_on_table": true,
+    "table_support_regraded_samples": 405,
+    "table_support_criterion": "Circular base low edge within10mm of tabletop; base centre x in[-.154,.874], y in[-.614,.614]m"
+  },
+  "current_evaluator_sha256": {
+    "detent_bottle/scoring.py": "3bcd49cb5917a397c879e03b5d9843c3b8214728e413ae9b7bcf34b016e78eeb",
+    "detent_bottle/support.py": "ad977d668b06fb332ecbf51d3f18c58d2732bc6ca6ec92679ff7f0da804deda9",
+    "yam/bottle_runtime.py": "7962c967a20c46365412d982cb35fffe508b38b6dc2e75435e1df0f6c78a4ef4"
+  },
+  "scoring_revision_note": "Table-support veto added after recording; all saved samples pass and scores/credit times are unchanged. Physics, controller and recorded observations/actions are unchanged; original recording source hashes remain above."
+}

@@ -1,0 +1,31 @@
+{
+  "source_task": "custom_bottle:dual_arm_detent",
+  "source_sha256": {
+    "backend/robot_bottle.py": "0fb1d055ac515458baf993087ee91842e9ef93742d914d5c379d710e692d5c7a",
+    "backend/robot_bottle_policy.py": "d70c3531248b3b2346324529f05382349d722d2e55bc0cfc75ae99cb7984bc1b",
+    "bottle-mechanism/model.py": "278dc158e6146578e803fee78541a93cb8cfc242c5350bbca59abcec06dd528e",
+    "mujoco-box-demo/dual_arm_demo/env.py": "2078f2285ada97ee0c4358bff8bd99b6e05df098ffacfc5d886b186cdf98c31e"
+  },
+  "adaptation": "Standalone imports; fixed layout; robot-only actuation; new partial scorer and permanent invalid-trial veto. Geometry and detent torque law retained.",
+  "yam_port": {
+    "geometry_source": "detent_bottle/bottle_model.py",
+    "geometry_source_sha256": "78d27cf13301c4c4cfc42466a8d0798afc46cba2fb097d299c7ca35e9db66ea0",
+    "scorer_source": "detent_bottle/scoring.py",
+    "integration_pattern": "Task-local lazy scene/embodiment hooks, following the upstream tasks/dual-latch-lid/partkit.py pattern; no installed SDK source edits.",
+    "sdk_revisions": {
+      "gpu": "NVIDIA L40S",
+      "driver": "565.57.01",
+      "isaac_sim": "6.1.0.0",
+      "arena_revision": "c7edf3a9d5d8276565208f72422f8f8a0806d6cf",
+      "yam_revision": "0059d02a1a91bc6834c1d0846022891df0c78730",
+      "launchable_revision": "25a2963d10451265dd2a6cbddea69d6a3b3b9b0d"
+    },
+    "differences": [
+      "PhysX constraints and material mixing replace MuJoCo contacts",
+      "1kHz stepping rather than native20kHz",
+      "Static COM gravity compensation rather than full dynamic bias; dry joint frictionloss omitted",
+      "YAM hardware geometry, joint limits and side-grasp plan replace custom Panda geometry and plan",
+      "PhysX incoming joint reaction sensors replace MuJoCo wrist sensors"
+    ]
+  }
+}

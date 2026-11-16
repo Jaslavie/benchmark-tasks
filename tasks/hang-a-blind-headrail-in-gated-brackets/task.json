@@ -1,0 +1,20 @@
+{
+  "title": "Hang a blind headrail in two gated brackets",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bimanual",
+    "hinged gate",
+    "headrail",
+    "window blind",
+    "installation"
+  ],
+  "instruction": "Hang the white blind headrail in the two window brackets.",
+  "context": "Finish carpenters (O*NET 47-2031.00) and maintenance and repair workers (49-9071.00) hang inside-mount blinds by opening the hinged gate on each box bracket, sliding the headrail in square until it bears on the back, and closing each gate over it. Board tasks hang rods and handles on open hooks and brackets; this one adds retainers that open first and close only once the long part is fully home.",
+  "setup": "Positions are object centres in cm from the midpoint between the arm bases: x forward, y to the robot's left. Table: oak top. Window, fixed at the back: light grey reveal wall 2 x 46 x 16 cm tall at x 37, y 0; pale blue glass pane 0.5 x 22 x 9 cm tall, in front of it (x 35.75, y 0). Two dark blue-grey box brackets of painted steel, each 7 cm wide (y 11.5 to 18.5, and -18.5 to -11.5), on grey 2 cm sill blocks 9 cm tall: floor x 30 to 36, top 10 cm above the table; top lip x 32.8 to 36, underside 14.5 cm; outer cheek 1 cm thick, 15.5 cm tall. Gates: orange plastic plate 0.8 x 6 x 2.8 cm, hinged at each bracket's front outer corner (x 31.3, y 18.5 and -18.5), shut across the bracket front (x 30.9 to 31.7), each with a white plastic grip tab 1.8 cm across, 3 cm tall, at its free end (y 13.4 and -13.4); a gate swings out to -x, 1.57 rad. Headrail: white plastic bar 3.5 x 32 x 3 cm with dark 1 cm end caps (34 cm long), two blue 3.4 x 1.8 x 3.5 cm grip tabs on top at y 8 and -8, 120 g, centred at x 20, y 0, lying on two dark 3 x 3 x 4 cm blocks at x 20, y 10 and -10.",
+  "scoring": "Rail home: underside on both bracket floors (within 0.4 cm), back face within 0.5 cm of the wall at both ends, tilt 2 degrees or less, each end 3 cm or more inside its bracket. Gates shut: both within 0.1 rad (gate in line with the bracket front, top photo). 1.0: rail home and both gates shut. 0.5: rail home, a gate open. 0.25: both gates were swung open 1.2 rad or more at once at some time, rail not home. Else 0. A rail more than 1 cm above the floors (held, perched on a lip, on the blocks) is not home. Doing nothing scores 0. Possible scores: 0, 0.25, 0.5, 1.0.",
+  "run_limit": "3,600 steps (3 minutes at 20 Hz)",
+  "reset_notes": "Shut both gates, then lay the headrail on the two blocks at its marked spot, square to the table edge.",
+  "fidelity": "Approximate. Brackets, gates and rail are rigid primitives; the hinges are frictionless with light damping and a stop at shut; no blind slats or cords. A shut gate leaves 8 mm to a rail that is home. The simulator scores the last step without opening the grippers, so a rail whose underside is more than 1 cm above the floors counts as not home.",
+  "scores": "Dream-1 run: 0.0 (Lifted the rail toward the brackets with both arms but left it unseated); demo: 1.0 (Carried the rail to the brackets with both arms, seated it, shut gates, backed away)",
+  "media": "M-LHFXFQ"
+}

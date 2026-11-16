@@ -1,0 +1,20 @@
+{
+  "title": "Snap a chalk line between two marks: pull it taut, pluck it straight up",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bimanual",
+    "chalk line",
+    "carpentry",
+    "taut line",
+    "snap"
+  ],
+  "instruction": "Snap a chalk line between the two marks. The hook is on the far nail. Pull the reel to the near mark and hold the line taut across both marks, then lift the line straight up at its middle and let it go. Put the reel on its rest.",
+  "context": "Carpenters (O*NET 47-2031) mark long straight lines by snapping a chalk line. One hand must keep it taut on the mark while the other lifts it straight up and lets go, and a slack line or a sideways pluck leaves a bowed or doubled print.",
+  "setup": "Two YAM arms at the near edge of a table; positions are (x forward from the arm bases, y left) in cm, heights above the table. A board of MDF painted matt dark slate, 16 x 76 cm, 1.2 thick, centred at (33, 0), fixed to the table. Yellow cross marks at (33, 30) and (33, -30). A steel nail at the far mark, (33, 30), holds the hook of a bright orange braided polyester chalk line, 1.5 mm thick (drawn 7 mm thick so that it shows on camera), 1 cm above the board. A blue plastic chalk reel, 7.2 cm across, 4 tall, 0.2 kg with its chalk, stands on a grey rest, 9 x 9 cm and 3 high, fixed at (20, -30). Its case is a third full of white marking chalk, which coats the line as it pays out. The line leaves the reel at a nose on its +y side, 8 mm above the reel's base. Its crank is locked with 59.5 cm of line out from the nail, just short of the near mark's centre, so a reel pulled there holds the line taut. The line stretches less than 5 mm at 10 N. Held taut at 5 to 10 N, lifted at least 4 cm at its middle and let go, it strikes the board along its length.",
+  "scoring": "Measured with a tape and a phone video. 1.0 when one snap leaves a white chalk line which, run on straight, passes within 5 mm of the near mark, bowed by at most 1 cm from straight, the reel stands on its rest, and fingers are at least 3 cm from the reel, for 1 s. 0.75 when one snap leaves a white chalk line passing within 5 mm of the near mark, bowed by at most 1 cm, but the reel is not on its rest or a finger is closer than 3 cm. 0.5 when it passes 5 to 15 mm from the near mark, bowed by at most 1 cm. 0 if there is no print, two prints, or the line is bowed more than 1 cm or passes more than 15 mm from the near mark. Letting go of a slack line leaves a bowed print.",
+  "run_limit": "1,200 steps (60 s at 20 Hz)",
+  "reset_notes": "Wipe the board, or turn it over. Rewind the reel to its lock, and stand it on its rest with the hook on the nail. Chalk is consumed.",
+  "fidelity": "Rigid-body physics at 240 Hz on GPU. The line is drawn as straight segments, not a soft cable, with no collider, tension or stretch. It is pinched when closed fingers come within 2 cm of it. The print appears at a release at least 4 cm above the line's path. Taut needs a gripper closed on the reel and the nose 59.5 cm from the nail. A pluck over 1 cm sideways counts as bowed. Not tested on a real board, where a line 1 cm up may print less at its ends.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-B9U7EG"
+}

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "weld-fitup"
+version = "0.1.0"
+description = "Fit up two bevelled steel coupons for a single-V groove butt weld, YAM arms"
+requires-python = ">=3.11"
+dependencies = ["numpy", "yam-arena"]
+
+[project.entry-points."inspect_robots.embodiments"]
+yam_weld_fitup = "weld_fitup.embodiment:WeldFitupEmbodiment"
+
+[tool.setuptools.packages.find]
+include = ["weld_fitup*"]
+
+[tool.setuptools.package-data]
+weld_fitup = ["THIRD_PARTY_NOTICES.txt"]

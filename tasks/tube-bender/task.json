@@ -1,0 +1,20 @@
+{
+  "title": "Bend a copper tube to 90 degrees in a lever bender, allowing for springback",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bimanual",
+    "tube bending",
+    "springback",
+    "hidden property",
+    "one-way action"
+  ],
+  "instruction": "Bend the tube in the bender to the 90 degree mark on the card, judged with the lever fully relaxed, then take both grippers away.",
+  "context": "Refrigeration mechanics (O*NET 49-9021.00) and plumbers (47-2152.00) bend copper tube to an angle by hand. It is hard because tubes that look alike spring back by different amounts, seen only when the lever is relaxed, and a bend cannot be undone: pull, relax, read, and pull again.",
+  "setup": "Two YAM arms at the near edge of a table; positions are (x forward from the arm bases, y left) in cm, heights above the table. A lever tube bender, 0.4 kg, stands free on the bench on a dark plate 20 x 34, with nothing fixing it down; friction between plate and bench is 0.4 at rest and 0.3 sliding. Its form wheel, 7 across, is at (33, 0). A form handle runs left along y and a lever runs right, both 17 long, with red rubber grips, 5 up. A copper tube (99.9% copper), 2.5 mm across with a 0.3 mm wall and 29 cm long, drawn 1 cm thick so that it reads from above, lies in the form wheel's groove on its far side, in line along y, beside the handles: 16 cm on the form handle's side, 13 on the lever's. A white card on the plate, 25 across, is marked for the tube's angle: green at 0, a red band from 87 to 93, black ticks at 70, 80 and 96. Pulling the lever towards the arms bends the tube round the wheel at a 35 mm radius; a torsion return spring at the pivot, 0.6 N m per radian (6.3 N at the lever grip, 15 cm out, holds the lever at 90 degrees), brings the lever back to its start line, in line with the form handle, when let go. By seed, the tube is hard, as drawn (0.2% proof stress about 300 MPa), and springs back 12 degrees, or is the same tube annealed and springs back 4; the two look alike.",
+  "scoring": "Measured with the protractor card, a ruler and a video. 1.0 when the tube lies in the red band, from 87 to 93 degrees; the lever tip is within 1.5 cm of its start line, in line with the form handle; and both grippers are 3 cm clear of both handles, all still for 1 s. 0.5 when the lever tip is within 1.5 cm of its start line and both grippers are 3 cm clear, all still for 1 s, and the tube reads from 80 to under 87, or over 93 up to 96. 0.25 when the lever tip is within 1.5 cm of its start line and both grippers are 3 cm clear, all still for 1 s, and the tube reads from 70 to under 80. 0 otherwise, or if the tube reads past 96 degrees, or the bender leaves the bench or tips over.",
+  "run_limit": "800 steps (40 s at 20 Hz)",
+  "reset_notes": "A bent tube is consumed: start each trial with a new one, in the temper of that seed, lying straight. Odd seeds spring back 4 degrees; even seeds, and no seed, spring back 12. Make the annealed tubes from the hard stock: heat each to a dull red with a torch, let it cool, and clean both kinds with an abrasive pad so that they look alike. Calibrate each batch before trials: bend three offcuts on the lever to 90 degrees on the card, relax the lever and read the card; the shortfall is the springback. Use batches whose means are within 1 degree of 12 (hard) and 4 (annealed), and more than 6 apart; set other batches aside. Check the return spring with a spring balance at the lever grip: 6.3 N holds the lever at 90 degrees.",
+  "fidelity": "Rigid-body physics at 240 Hz on GPU. The tube is not simulated as a material: its set angle is the largest lever angle less the springback, one way only, and it follows the lever down to that. The only load on the lever is its return spring (6.3 N at the grip at 90 degrees); the tube's own resistance to bending, about 3 N there for the hard tube and 1 N annealed, is not modelled. Both arms: pulling with one spins the light bender, but pressing down on it with one arm was not tried.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-HQ7DCQ"
+}

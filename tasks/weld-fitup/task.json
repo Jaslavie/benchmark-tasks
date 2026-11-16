@@ -1,0 +1,22 @@
+{
+  "title": "Fit up two bevelled coupons for a V-groove weld, bevels facing and a 1/16-1/8 in root opening",
+  "category": "Impact on jobs",
+  "keywords": [
+    "welding",
+    "weld fit-up",
+    "root opening",
+    "part orientation",
+    "end-for-end turn",
+    "precise placement",
+    "structural steel"
+  ],
+  "instruction": "Fit up the two steel coupons for a single-V groove butt weld: turn each one so its bevelled edge (the bright one) faces the other coupon, and set them flat side by side with a root opening of 1/16 to 1/8 inch (1.6 to 3.2 mm) along the whole joint and their ends in line.",
+  "context": "Welders and fitters set two prepared plates with their bevels facing each other and a set root opening before the root pass: \"Root Opening: 1/16\\\"-1/8\\\"\" (LANL WPS 3501-11B, an AWS groove-weld procedure: https://engstandards.lanl.gov/esm/welding/welding_specs/3501-11B.pdf), and \"Parts to be joined by butt welding shall be carefully aligned\" (LANL WFP 2-04, AWS D1.1, 8.0 D). Too tight leaves the root unfused, too wide burns through, and a coupon turned the wrong way puts a square edge in the joint. Done by: welders, cutters, solderers and brazers; structural metal fabricators and fitters.",
+  "setup": "Positions in cm on the table, from the midpoint between the two arm bases: x forward (away from the arms), y to the robot's left. A dark steel welding-table top (30 x 32 x 1 cm) is fixed on the table, centred at (34, 20.5). On it lie two loose steel coupons, each 7.62 x 7.62 x 1.27 cm (3 x 3 x 1/2 in), 0.56 kg, dark mill scale, with one edge bevelled 30 degrees from vertical down to a 3.2 mm root face; the bevel, the root face and a 2.5 cm band of the top face beside it are ground bright. coupon_a is centred at (40, 29) with its bevel facing away from the arms (+x); coupon_b is centred at (40, 13) with its bevel facing right (-y), away from coupon_a. Friction: coupons 0.6 static / 0.5 dynamic (steel on steel), welding table 1.2 / 1.0. Both grippers start open at the ready pose. Nothing else is on the table.",
+  "scoring": "A coupon is flat when tilted at most 5 degrees with its centre within 3 mm of its height lying on the table, and still when moving under 1 cm/s and turning under 0.5 rad/s. A coupon's bevel faces the other when the other's centre lies ahead of its bevelled edge and within that edge's length. The root opening is measured at both ends of the joint, from each coupon's root edge (the bottom of its bevelled side) to the other coupon's bevelled side. 1.0 when both coupons are flat and still, both bevels face each other, the root opening is 1.6 to 3.2 mm at both ends and the ends are in line within 5 mm, held for 1 s; if time runs out before that has held for 1 s, it scores 0.9. 0.5 when both are flat and still with both bevels facing each other, parallel within 10 degrees, opening 0 to 10 mm at both ends and ends within 2 cm, but the opening or the ends are outside those limits. 0.25 when both are flat and still, side by side as for 0.5, with only one bevel facing the joint (a square edge in the joint). Otherwise 0, including a coupon off the table, on edge or on top of the other. The joint can be anywhere on the table, run any way, with either coupon on either side.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Lay each coupon back at its mark, flat, bevel up, facing as at the start.",
+  "fidelity": "The coupons are rigid, perfectly flat steel prisms with the bevel and root face of a real prepared coupon; nothing is tacked or clamped, so they stay where they are let go. The welding table is a fixed steel plate. A custom body per coupon, from this task's plugin (embodiment yam_weld_fitup), since a bevel isn't a box. Coupon friction 0.6/0.5, table 1.2/1.0.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-X383QD"
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Rinse a glass on a bar's push-down glass rinser, then leave it to drain",
+  "category": "Societal relatability",
+  "keywords": [
+    "bar service",
+    "glass rinser",
+    "glassware",
+    "spring valve",
+    "press and hold"
+  ],
+  "instruction": "Rinse the glass on the glass rinser, then leave it to drain on the drip mat.",
+  "context": "Bartenders rinse each glass on a push-down glass rinser just before use: the glass goes rim-down over the rinse plate and is pressed down, which opens a spring valve and sprays the inside of the glass; it is held for a second or two, then lifted off to drain rim-down. The glass's own weight does not open the valve, and pressing the plate with nothing over it, or with the glass off centre, sprays the bar and the bartender. The robot must push a held glass down against a spring, keep it centred and seated while the spray runs, and only then set it down. Unlike placing a cup on a coaster or racking glasses, success here is a sustained, centred press through the grasped object on a sprung valve. A familiar bar-service moment: anyone who has sat at a bar has watched a bartender give a glass this quick rinse before pouring a beer, and the same rinsers sit behind counters in pubs, cafes and coffee shops.",
+  "setup": "Positions in cm from the midpoint between the arm bases (x forward, y left). Glass: a loose pressed-glass tumbler, 180 g, a 12-sided prism 7.2 cm across the flats (7.5 cm across the corners) and 10.5 cm tall, 3 mm walls, standing rim-down at x 36, y -25, two flats facing +-y. Rinser: a fixed stainless drain bowl, inside 14 x 14 cm, 4 cm tall rim, centred at x 32, y -9; in it a 9.5 cm square, 60 g rinse plate on a vertical spring (300 N/m, 3.6 N preload against its upper stop, top 3.2 cm above the counter, 9 mm of travel); the valve opens once the plate is 4 mm down (about 3 N more than the glass's weight). Drip mat: a fixed 13 x 13 x 0.6 cm rubber mat centred at x 22, y -24. Real-world equivalent: a counter-mounted bar glass rinser with a stainless drain bowl whose 1.5-inch outlet runs to the bar's floor drain; under the rinse plate, a multi-jet spray nozzle on a push-down valve, fed by a 3/8-inch cold-water line at mains pressure (about 3-4 bar) through a shut-off valve.",
+  "scoring": "From the episode's recorded poses and the plate's travel. Rinse time accrues while the plate is at least 4 mm down with the glass rim-down (tilt under 10 deg), its rim centre within 1.2 cm of the plate centre and its rim within 4 mm of the plate's top. On the mat: rim-down (tilt under 8 deg), every rim point on the mat within 3 mm of its top, let go (both grippers 2.5 cm clear) and still. Score = 0.6 x min(1, rinse time / 1.5 s) + 0.4 if on the mat at the end; 1.0 is success when held 1 s. 0 if at any moment the plate is 4 mm down without the glass covering it (sprayed the bar) or the glass is more than 45 deg off rim-down. Scored at the last step; range 0 to 1.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "Stand the glass rim-down on its mark, flats facing the arms' sides. The rinse plate springs back to its stop; the bowl and mat do not move.",
+  "fidelity": "Rigid boxes, default contact friction. The glass is one rigid body of 14 boxes, rendered opaque pale blue-grey; no breakage. The rinse plate is a square plate (a real one is a star) on a PhysX prismatic joint with a spring drive and stops; the spray is not simulated, only the valve state. Rinse time is counted per 20 Hz control step.",
+  "scores": "Dream-1 run: 0; demo: 1.0",
+  "media": "M-D2EUC9"
+}

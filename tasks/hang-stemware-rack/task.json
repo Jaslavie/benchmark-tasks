@@ -1,0 +1,22 @@
+{
+  "title": "Hang washed wine glasses upside down in an overhead bar rack",
+  "category": "Impact on jobs",
+  "keywords": [
+    "bartending",
+    "stemware",
+    "overhead glass rack",
+    "high reach",
+    "thin stem",
+    "slide along a channel",
+    "threaded in from the open end"
+  ],
+  "instruction": "Hang both wine glasses in the overhead rack.",
+  "context": "Behind a bar, washed stemmed glasses are hung bowl-down from an overhead rack so they drain and stay clear of dust. The rack is a channel with two lips: the glass's stem goes up into the 25 mm gap between the lips at the rack's open end and the foot is slid along the lips until it hangs. Glasses come out of the glass washer bowl-down, so no flip is needed. The lips are 22 cm above the bar top, so the hand has to stay under the rack while it lifts the foot above the lips.",
+  "setup": "Two YAM arms with parallel grippers, bases 61 cm apart at the near edge of a table. Positions in cm from the midpoint between the arm bases: x straight out, y to the left. A single-channel brass overhead glass rack runs across the table at x 44: two lips with a 2.5 cm channel between them, 8.9 cm opening, 3.8 cm tall, the lips' top 22.0 cm above the table, from its open end at y -20 to a closed end at y +10 (30 cm, room for four glasses). Two square brass posts, 2 cm across and 25.4 cm tall, stand at its far side (x 50) and hold it. On a black rubber bar mat (20 x 12 cm, 6 mm thick) to the right, two wine glasses stand bowl-down on their rims: A at (44, -30) and B behind it at (53, -30). Each glass: foot 7.5 cm across and 3 mm thick, stem 9 mm thick and 8 cm long, bowl 9.5 cm tall (7.4 cm rim, 8.4 cm at its widest), 17.8 cm tall, 180 g.",
+  "scoring": "Checked by eye and with a ruler once everything is still. 1.0: both glasses hang upside down in the rack: each foot rests on both lips (its underside within 3 mm of the lips' top), the stem within 8 mm of the channel's centre line, the whole foot between the open and the closed end, the glass hanging straight (tilted at most 5 degrees); nothing moves and both grippers are at least 3 cm from each glass. 0.5: the same with one glass hung. 0 otherwise, including a glass still held, or any glass knocked over (tipped past 45 degrees) at any time during the trial (standing it back up does not undo that). Full score held for 1 second ends the trial; otherwise the score at the end of the run.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "Nothing is consumed. Slide both glasses out of the rack and stand them bowl-down on the mat.",
+  "fidelity": "Rack channel, opening and profile height are a real single-channel bar rack's; the lip and wall gauge, the posts and the glass sizes and mass are assumed (a typical 300 ml wine glass). Each glass is one rigid body: its bowl is a solid convex hull (nothing goes inside it) and glass, brass and rubber all use the simulator's default friction. Two glasses, not a full rack, to keep the trial short.",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-ZWKZ68"
+}

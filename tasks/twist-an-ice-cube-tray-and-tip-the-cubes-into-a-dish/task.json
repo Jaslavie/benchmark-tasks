@@ -1,0 +1,21 @@
+{
+  "title": "Free the ice cubes: twist an ice-cube tray between both hands, then turn it over to tip the cubes into the dish",
+  "category": "Societal relevance",
+  "keywords": [
+    "bimanual",
+    "kitchen",
+    "ice-cube tray",
+    "twisting",
+    "turning over",
+    "opposing torques"
+  ],
+  "instruction": "Get the ice cubes into the glass dish: hold the ice-cube tray by its two end tabs and twist it, one end one way and the other end the other way, so the frozen cubes crack loose; then lift it off the dish's rim, turn it over above the dish so all eight cubes fall in, turn it back and set it back across the dish, and take both arms back to where they started.",
+  "context": "Getting ice out of a tray is a small everyday kitchen job at home, in bars and in care homes: the cubes are frozen to the plastic and only come loose when the tray is twisted, one end against the other, which takes both hands; then the tray has to be turned over above a bowl without dropping cubes on the counter.",
+  "setup": "A table in front of two arms (bases 61 cm apart), seen by one overhead camera and a camera on each wrist. Distances are measured forward from the line between the arm bases and sideways from the midpoint between them. (1) A rectangular glass dish, fixed, 15 cm (front to back) by 16.5 cm (left to right) inside and 8 cm deep, its middle 30 cm forward on the centre line, its rim 8.4 cm above the table. (2) Across its top, a light blue polypropylene ice-cube tray, 7.9 cm wide, 15.7 cm long and 3.2 cm deep, with eight 3.5 cm compartments (two by four), hanging by its two end tabs (2.2 x 5 x 1.6 cm, sticking out 5 cm past each end of the tray, their middles 10.4 cm left and right of the centre line) on the dish's end walls, between small lugs on the walls that keep it centred. The tray twists between its two halves (about 0.01 N m per degree). (3) In each compartment a frozen ice cube 2.8 cm across (20 g). The cubes stay frozen in, however the tray is turned, until the tray has been twisted from both ends: 12 degrees one end against the other, each end turned at least 5 degrees from level, the two opposite ways; then all of them are loose. The layout is the same in every trial, as in the screenshot.",
+  "scoring": "Judged at the end of the trial. 1.0: all eight cubes in the dish, the tray back across the dish (each end tab within 1.5 cm of where it started, at its height within 1 cm, upright within 15 degrees) and both arms back where they started (each gripper's fingertip centre, TCP, within 5 cm of its start); 0.5: all eight cubes in the dish, otherwise; 0.25: the tray twisted far enough to crack the cubes loose at some point; else 0.0. The trial ends at the run limit, or once the full score has held for 1 s with the tray and every cube still.",
+  "run_limit": "800 steps (40 s at 20 Hz)",
+  "reset_notes": "Put the eight cubes back in the tray's compartments (frozen in) and hang the tray back across the dish.",
+  "fidelity": "Rigid-body simulation (Isaac Sim 6.1, PhysX, 20 Hz control). Simplified: the tray is two rigid halves joined by a sprung hinge along its length instead of flexing plastic; the cubes are held frozen by fixed joints the task file switches off once the tray has twisted 12 degrees; the cubes are rigid, slippery blocks that do not melt or stick together. Cameras 1280 x 704 (Dream-1 sees 320 x 176).",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-R49XBN"
+}

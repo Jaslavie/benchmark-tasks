@@ -1,0 +1,23 @@
+{
+  "title": "Get a heavy carton up onto a low platform by setting its front edge on the step and pushing",
+  "category": "Impact on jobs",
+  "keywords": [
+    "moving heavy loads",
+    "step",
+    "dock lip",
+    "plinth",
+    "tipping point",
+    "bimanual",
+    "push",
+    "layout lots"
+  ],
+  "instruction": "Move the carton up onto the platform, keeping it upright.",
+  "context": "Freight and stock movers, delivery drivers and appliance installers (O*NET 53-7062, 53-3033, 49-9031) get boxes too heavy to lift up a step, dock lip or plinth by resting the leading edge on it and pushing until the weight passes the edge. Shoved at the step, a box jams or goes over on its face. The ability is using the step's edge as a pivot. Unlike TK-V4KV84 (a lever raises a crate so dunnage goes under) and TK-DLNFPH (walking a washer on its edge), the load has to change level.",
+  "setup": "Positions are from the robot's view: 'in front' is distance away from the arm bases, 'left' and 'right' are the robot's, the midline is halfway between the two arm bases, heights are above the table top. Platform (fixed, grey painted steel, smooth): 25 cm front to back, 40 cm wide, 2 cm tall, its near edge 38 cm in front of the arm bases, centred on the midline. Carton (loose, brown corrugated board, rigid, 3.0 kg, too heavy for the arms to lift whole): 16 cm front to back, 24 cm wide, 6 cm tall, with a dark T-shaped 'this way up' mark on its top (stem toward the robot). Along the top of its front edge (the edge nearer the platform) runs a round black steel handle bar 12 mm across and 24 cm long, its axis 16 mm above the carton's top and 12 mm in from the front face, on two 10 x 10 mm posts 23 cm apart. Lot A (the screenshot): the carton on the table, centred on the midline, its long side across, its front face 4 cm short of the platform's near edge (34 cm in front of the arm bases). Lot B: the carton 5 cm to the left and 3 cm further from the platform. Nothing else is on the table. Trials are run on lots A and B and averaged; the screenshot shows lot A.",
+  "scoring": "Score 1.0 when the carton rests flat on the platform (all four bottom corners within 1 mm of the platform's top and inside its outline, top within 2 degrees of level), let go (no part of either gripper within 5 mm of it) and still for 1 s. Score 0.75 when it rests flat and level on the platform (all four bottom corners within 1 mm of the platform's top height, top within 2 degrees of level) with the centre of its underside past the platform's near edge but both back bottom corners short of it (the back overhanging the near edge), the front and sides inside the outline, let go and still. Score 0.5 when it rests across the step, let go and still: both front bottom corners past the platform's near edge, inside the platform's outline sideways, and no lower than 1 mm under its top (the carton's underside bearing on the step's edge or the platform), both back bottom corners on the table (within 1 mm). Score 0 otherwise: still on the table, jammed against the step, held, moving, overhanging the platform's far or side edges, on its side or upside down, or with its top tilted more than 20 degrees from level at any time during the trial, even if it is later set right. Trials are run on each of lots A and B and averaged.",
+  "run_limit": "900 steps (45 seconds at 20 Hz)",
+  "reset_notes": "Lift the carton off the platform and set it back on the table for the lot (A: centred on the midline, front face 4 cm short of the step; B: 5 cm left and 3 cm further back). Nothing is consumed.",
+  "fidelity": "Rigid boxes and cylinders. Friction is set for coated board on painted steel (0.45 carton, 0.30 platform; the table 0.5, the PhysX default). The carton is small for its 3 kg, chosen by measurement: the arms on the handle raise its front edge about 27 mm but cannot lift its back off the table. The handle bar turns in the fingers. Lots stop a replay of one fixed motion, not a memorised replay of both.",
+  "scores": "Dream-1 run: 0.0 (0 in each of lots A and B); demo: 1.0 in each lot",
+  "media": "M-YFA3CP"
+}

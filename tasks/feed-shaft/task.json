@@ -1,0 +1,20 @@
+{
+  "title": "Feed a hex shaft through two bearings",
+  "category": "Impact on AI timelines",
+  "keywords": [
+    "robot building",
+    "hex shaft",
+    "flanged bearing",
+    "regrasp",
+    "tight clearance"
+  ],
+  "instruction": "Slide the hex shaft through both bearings so that each end sticks out at least 1 cm past the outside of its bearing, room for a collar on each end.",
+  "context": "A roller or drive shaft on a robot runs through two bearings in parallel plates: \"Slide the cut shooter wheel shaft into position.\" (WCP, GreyT Shooter (4\"-6\") assembly instructions, Additional Hardware, Step 2: https://docs.wcproducts.com/welcome/greyt/greyt-shooter-4-6/assembly-instructions/additional-hardware/steps-1-5). Two collars then lock it, \"flat with the ThunderHex Bearing flanges\" (GreyT Shooter (9.5\"), Belt Drive). Real hex bearings are a snug fit on the shaft, and here the bores leave a millimetre each side; either way a hand can't follow the shaft through a plate, so it goes in a stroke at a time. A shaft forced in crooked burrs or jams; one through only one bearing leaves the roller unsupported. Done by: robot builders and electromechanical assemblers.",
+  "setup": "Positions are in cm on the table, from the midpoint between the two arm bases: x forward (away from the arms), y to the robot's left. Two blue aluminium bearing plates (0.635 cm thick, 10 cm wide, 7 cm tall) stand across the table, fixed, their inner faces 20.3 cm apart: one centred at (25, 25.5) and one at (25, 4.55). Each holds a black square bearing block (2.86 cm across, 0.795 cm thick, no flange) with a 1.47 cm square bore centred at x = 25, 4 cm above the table, so both bores lie on one line along y. A silver 1/2-inch hex shaft (1.27 cm across the flats, 25.4 cm long, 85 g) lies flat on the table, centred at (16, 36), turned 20 degrees anticlockwise from pointing along y. Nothing else is on the table.",
+  "scoring": "The shaft runs through a bearing when its centre line crosses the middle of that bearing's plate inside the bore. Through both bearings with each end at least 1 cm past the outside of its bearing (room for its collar), and still (moving under 1 cm/s and turning under 0.5 rad/s), held for 1 s: 1.0. If time runs out before that has held for 1 s, it scores 0.9. Through both, but an end has less than 1 cm or the shaft is still moving: 0.5. Through one bearing, from either side: 0.25. Otherwise 0.",
+  "run_limit": "2,400 steps (2 minutes at 20 Hz)",
+  "reset_notes": "Pull the shaft out of the bearings and lay it flat at its mark, turned 20 degrees.",
+  "fidelity": "The 1/2-inch hex shaft is a 12.7 mm square bar and each bearing's bore a 14.7 mm square, 1 mm each side; real ThunderHex bearings (13.75 mm ID) fit snug, and real shaft ends are chamfered. The bearings are square blocks with no flange, and the plates are cut down to 10 x 7 cm around them. Every object has the same rubber-like friction (1.2 static, 1.0 dynamic).",
+  "scores": "Dream-1 run: 0.0; demo: 1.0",
+  "media": "M-KXHH8Q"
+}
