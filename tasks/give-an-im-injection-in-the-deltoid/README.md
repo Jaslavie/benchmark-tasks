@@ -27,13 +27,25 @@ python -m pytest -q test_im_injection.py                   # scorer, layout, dem
 - Trial settings: `INJ_HEIGHT` (0, 1, 2 spacer layers) and `INJ_TRAINER_T` (m, 0.043-0.050) set the trial's height and
   skin x. The real trial follows a fixed rotation: trial k stands on k mod 3 layers of 18.3 mm plywood.
 - Seed and jitter: one seed (0), no object jitter.
-- Runtime: the scripted demo ran 1,120 control steps (56 s at 20 Hz, inside the 3,600-step run limit) and took 14
-  minutes of wall-clock time on one GPU. A policy run uses the full 3,600 steps.
+- Runtime: the scripted demo ran 1,101 control steps (55 s at 20 Hz, inside the 3,600-step run limit) and took 16
+  minutes of wall-clock time on one GPU shared with other jobs. The Dream-1 run used all 3,600 steps and took 44 minutes.
 - Diagnostics: `INJ_TRACE` (a trace every 0.25 s; `run_injection.sh` sets it), `INJ_PROBE` and `INJ_ZERO_WRENCH`. They
   only log or switch applied forces off for diagnosis, and are unset in scored runs.
 - The full-mode run prints a scorer check: the step checks ran, the score before the stow is at most 0.75, and 1.0 after
   it. The check only prints and never voids a run. If the syringe is not stowed, the run prints each stow condition:
   barrel, rod, cap and both grippers' clearance.
+
+## Recorded runs (scores as the scorer reported them)
+
+Both runs are on the files in this folder, with no spacer (`INJ_HEIGHT=0`, acromion edge 25.0 cm) and the 50 mm trainer.
+
+- Scripted demo (`tools/run_injection.sh <name> 3600 scripted full 0`): **1.0**, reached and held 1 s at step 1,101.
+  One puncture, D 37.5 mm, L 0.3 mm, angle 0.3 deg, full depth, continuous in muscle; the needle moved at most 0.05 mm
+  and 1.2 deg between S and the retraction. The stopper broke loose at 3.0 N, S was 1.0 s later at the 0.9 mL line, and
+  the 0.8 / 0.6 / 0.4 / 0.2 / 0 lines were reached 0.94, 2.84, 4.85, 6.84 and 8.86 s after S (1.7 mm/s under a thumb
+  load of 3.3-3.7 N); the retraction fired 1.4 s after the 0 line. Syringe in the container, cap in the cup.
+- Dream-1 (`tools/run_injection.sh <name> 3600 dream`): **0.0**. It used all 3,600 steps: the arms hovered
+  near the syringe rest and the sharps container, nothing was grasped and there was no puncture.
 
 ## Scene and assets
 
@@ -89,7 +101,8 @@ number for a visible outcome, it is given here.
   - the unretracted bare needle touching anything but the skin or the container's inside, either arm included; the
     cap's inside is exempt only while uncapping, and the dropped cap is read from geometry;
   - more than 0.2 mL pushed before the first puncture;
-  - the bare syringe dropped or set down outside the container, its rest included;
+  - the bare syringe dropped or set down outside the container, its rest included: at rest with no fingertip load
+    for 0.5 s. A syringe uncapped while it lies unheld on its rest counts, so the cap comes off a held syringe;
   - the needle bent more than 10 deg off the barrel's axis on any side-camera frame;
   - the syringe let go (no fingertip load for 0.5 s) with its needle in the trainer;
   - a puncture less than 20 mm below the acromion.
@@ -101,7 +114,9 @@ number for a visible outcome, it is given here.
 - Rigid bodies at 240 Hz on GPU PhysX, at real sizes.
 - Needle in tissue: a rule on a D6 joint between the trainer and the syringe. The needle goes in when its tip presses the
   skin at 1.0 N or more within 20 deg of the local normal. It stops at the hub (25.4 mm). A steeper press records a
-  puncture but never goes in.
+  puncture but never goes in. The trainer is rigid and the needle does not enter it: the needle's carrier slides back
+  into the barrel as the barrel advances, which keeps the hub's approach, the depth and the angle real. Once in, the
+  joint holds the syringe's rotation within 20 deg of the skin's normal.
 - Tissue forces: 0.8 N of stick-slip along the needle and a 300 N/m hold on its line. Both read the needle tip's
   measured motion, its position differentiated and low-passed over 20 ms. The solver's velocity of the gripped barrel
   carries an offset with the barrel still, and fed that velocity, the tissue forces drove the stopper.
@@ -141,6 +156,40 @@ number for a visible outcome, it is given here.
     retraction;
   - the scorer itself (the step checks ran; the score at most 0.75 before the stow and 1.0 after it);
   - every joint torque at most 9 N m.
+
+## Scoring one real trial (worksheet)
+
+About 10 minutes per trial for one person with the two videos in a player that steps frame by frame (an estimate from
+the list below; not yet timed on a real trial). In order:
+
+1. After the trial, at the trainer: place the midline card, find the new puncture, measure D and L with the steel
+   rule; count the punctures (raking-light photo). Weigh the used syringe (0.9 g or more used).
+2. Side video: note any e-stop event (needle touch, bent needle, syringe set down or let go, 0.2 mL pushed early).
+3. Side video, first in-muscle frame (hub 5 mm from the skin): read the stopper edge to the nearest graduation, the
+   pitch; overhead video, same frame: the yaw. A is the worse of the two.
+4. Side video: the frame the hub touches the skin (full depth); the frame S (edge on the graduation 0.1 mL below the
+   reading in step 3); the frames the edge reaches the 0.8, 0.6, 0.4, 0.2 and 0 lines; the retraction frame. Write the
+   six times down: the intervals give the rate, and no 3 s may pass without a new 0.1 mL graduation.
+5. Between S and the 0 line: step through for a 2 mm gap between the pushing finger and the thumb rest (3 frames).
+6. Between S and the retraction: at S, at each line and at the retraction, read the hub's x and z and the pitch (side)
+   and the hub's y and the yaw (overhead) against their values at S (3 mm, 5 deg); count hidden frames.
+7. End of the video: syringe below the container's rim, cap in the cup, both grippers 5 cm clear, held 1 s.
+8. Read the tier from task.json `scoring`.
+
+## Camera calibration (real trial)
+
+The two scoring cameras stay fixed for a session. Each is calibrated with a printed 10 mm grid card (a 100 x 100 mm
+grid, lines 0.3 mm, checked against the steel rule):
+
+- Side camera, at session start: hold the card vertical in the y = 0 plane (against the midline card's notch), its
+  lower edge on the base, and photograph it. This gives mm per pixel along x and z for the hub's position, the pitch
+  and the hub-to-skin gap, and shows the image is square to the plane (grid lines within 1 deg of the frame's edges).
+- Overhead camera, at session start and at each new spacer height: lay the card horizontal at the syringe's working
+  height (on a block about 4 cm below the acromion edge, the site's height), centred on y = 0, and photograph it.
+  This gives mm per pixel along x and y for the yaw, the hub's y and L.
+- Check: the 100 mm scale bar on the base's +y face measures 100 +- 1 mm in the side view. A calibration is redone if
+  a camera is bumped or the check fails.
+- The barrel's own graduations (1.69 mm per 0.1 mL) are read directly in the side view and need no calibration.
 
 ## Reset
 
