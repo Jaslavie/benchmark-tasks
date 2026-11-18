@@ -41,8 +41,10 @@ D_HIGH = 0.020  # m: a puncture closer than this below the acromion is a 0
 IN_MUSCLE_GAP, FULL_DEPTH_GAP = 0.005, 0.001  # m hub-to-skin gap: in muscle; full depth "the hub touches the skin in the
 # side view" (the simulation's reading: within 1 mm)
 GRAD_ML = 0.1  # mL: the finest graduation printed on the VanishPoint 3 mL barrel (0.1 mL ticks, longer every 0.5 mL)
-# S: the first frame the stopper edge has reached the first printed graduation below where it stood at the first
-# in-muscle frame (a graduation is reached when the edge is on or past it: no tolerance)
+# S: the first frame the stopper edge has reached the printed graduation 0.1 mL below its reading at the first
+# in-muscle frame, that reading taken to the nearest graduation (a graduation is reached when the edge is on or past it:
+# no tolerance). The edge must travel at least half a graduation (0.05 mL, 0.85 mm) to reach it, so S is the push's
+# start and never the insertion, however close to a line the fill sits (`s_line`).
 STILL_DEG, STILL_M = 5.0, 0.003  # needle still: pitch and yaw within 5 deg, hub within 3 mm in x, y and z of its pose at S
 HIDDEN_MAX_S = 1.0  # s of hidden frames (cumulative, S to retraction) above which needle-still is not credited
 DOSE_FIRST_ML = 0.9  # mL: the edge at or above this line at the first in-muscle frame (full dose)
@@ -183,25 +185,29 @@ ENGAGE_F, ENGAGE_DEG = 1.0, 20.0  # N the tip presses the skin, within this of i
 K_SENSE = 500.0  # N/m: the needle's sensing spring (1 N at 2 mm)
 TISSUE_F, TISSUE_V = 0.8, 0.002  # N stick-slip along the needle, m/s to full friction
 K_LAT, C_LAT = 300.0, 2.0  # N/m, N s/m: the tissue holds the needle's line
-PLUNGER_C = float(os.environ.get("INJ_PLUNGER_C", "770.0"))  # N s/m authored (INJ_PLUNGER_C: diagnostics only) on J_plunger's drive (1.3 N at 0.1 mL/s as authored, gain 1). On the GPU it acts at only
-# about 40-75 N s/m (probe 1: 65-75 for 775; spike 14: 41 for 13,200, so it does not scale with the authored value): joint
-# drives are capped on this rig. So the stopper's glide resistance is applied as a force (F_GLIDE, below)
 PLUNGER_JIG = [0.0]  # N along the axis on the plunger: the spike's damping measurement sets it (0 in every scored run)
-# The stopper's glide: F_GLIDE of Coulomb friction along the barrel's axis, applied every physics step to the plunger and,
-# equal and opposite, to the barrel, from the stopper's breakaway (J_stick released) to the retraction. Applied forces
-# do reach the GPU (the barrel's 15 N test, the jig). Spike 10: a 2 N friction applied from the
-# slide's velocity chattered (that velocity was the bodies' centre-of-mass difference, ~1 m/s off, since fixed: it is
-# differentiated from the slide's position). Even read correctly, a velocity law F = -F_GLIDE tanh(v / V_EPS) is not stable
-# explicit at 240 Hz: its slope F_GLIDE / V_EPS (2,500 N s/m at 0.8 mm/s) times dt over the moving mass is about 5,000 on
-# the 2 g plunger and 10-50 with a 0.2-1 kg hand on it (it must stay under 1); clamped so it cannot reverse the 2 g
-# plunger in one step (m |v| / dt) it is 0.0008 N at 0.1 mL/s. So the friction is elasto-plastic (a stopper's rubber
-# shears GLIDE_Z0 before it slides): F = -F_GLIDE z / GLIDE_Z0, z the slide's displacement since it last slid, held within
-# +-GLIDE_Z0 (z += the slide's per-step displacement, then clipped). Sliding either way it is a constant F_GLIDE against
-# the motion, with no velocity feedback; at rest it can only spring the stopper back by at most GLIDE_Z0. Its stiffness
-# F_GLIDE / GLIDE_Z0 = 4,000 N/m is stable explicit: k dt / c = 0.41 on the free plunger against the drive's implicit
-# 41 N s/m (monotone below 1), k dt^2 / m = 0.35 with a 0.2 kg hand on it (README, "Stopper glide")
+# The stopper's resistance has two parts, both acting between the plunger and the barrel.
+# (1) Glide: F_GLIDE of Coulomb friction along the barrel's axis, applied every physics step to the plunger and, equal and
+# opposite, to the barrel, from the stopper's breakaway (J_stick released) on. It is elasto-plastic (a stopper's rubber
+# shears GLIDE_Z0 before it slides): F = -F_GLIDE z / GLIDE_Z0, z the slide's displacement since it last slid, held
+# within +-GLIDE_Z0 (z += the slide's per-step displacement, from its position, then clipped). Sliding either way it is
+# a constant F_GLIDE against the motion, with no velocity feedback; at rest it can only spring the stopper back by at
+# most GLIDE_Z0. Its stiffness F_GLIDE / GLIDE_Z0 = 4,000 N/m is explicit, against the joint's implicit FLOW_C:
+# k dt / c = 0.02 (stable well under 1). A velocity law F = -F_GLIDE tanh(v / V_EPS) is not stable explicit at 240 Hz.
+# (2) Flow: see FLOW_C below (the joint's damping, integrated by the solver).
 F_GLIDE = 2.0  # N: the stopper's glide once broken loose (above a plain 1 mL syringe's measured 0.1-0.7 N: README; the breakaway is BREAKAWAY_F)
 GLIDE_Z0 = 0.0005  # m of presliding (the stopper's rubber) before the full F_GLIDE
+# The liquid through the needle: what makes a real push slow. Hagen-Poiseuille for water (1.0 mPa s at 20 C) through the
+# 25 G x 1 in needle (bore 0.26 mm nominal, 25.4 mm long) from a barrel of 59.2 mm2 (1.69 mm per 0.1 mL): 226 kPa per
+# mL/s, so 13.4 N per mL/s on the plunger: 1.3 N at the taught 0.1 mL/s, FLOW_C = 790 N s/m of stopper speed (ISO 9626
+# bores for 25 G, 0.232-0.292 mm, give 500-1,250 N s/m: the purchased unit's push force is measured before trials).
+# It is J_plunger's zero-velocity damping drive. The barrel and the plunger are one reduced-coordinate articulation (the
+# barrel its floating root link, J_plunger its only joint), so the solver integrates that damping exactly: measured
+# 790-791 N s/m on the GPU with the barrel held by contact. As two free bodies on a maximal-coordinate joint the same
+# drive acted at about 63 N s/m whenever the barrel was held by contact (a gripper, its rest), and the glide's force
+# pair cancelled; with next to no resistance the dose ran out in about 1 s. A drive cannot be changed at run time, so
+# the damping also acts over the detent's 2 mm past the 0 line and on the retracted plunger (where no liquid is left).
+FLOW_C = 790.0  # N s/m
 GLIDE_TAU = 0.0075  # s: the low-pass on the slide's velocity (from its position) the trace and the spike's sub-gate read
 GLIDE_V_SLIDE = 0.0005  # m/s: the filtered slide velocity above which the stopper counts as sliding (the sub-gate's mean)
 BREAKAWAY_F = 3.0  # N of thumb load on the thumb rest that breaks the stopper loose (static friction; TO MEASURE)
@@ -247,6 +253,13 @@ def grad_index(vol: float) -> int:
 def grad_below(vol: float) -> float:
     """The first printed graduation below `vol` (strictly; on a graduation, the next one down)."""
     return (math.ceil(vol / GRAD_ML - 1e-6) - 1) * GRAD_ML
+
+
+def s_line(vol_first: float) -> float:
+    """The graduation whose reaching is S: one graduation (GRAD_ML) below the reading at the first in-muscle frame, that
+    reading taken to the nearest printed graduation (midway reads up). A 1.0 mL fill that reads 1.0002 or 0.98 mL gives
+    the 0.9 line, so the edge must travel at least half a graduation before S: jitter about a line cannot fire it."""
+    return (math.floor(vol_first / GRAD_ML + 0.5 + 1e-6) - 1) * GRAD_ML
 
 
 def volume(travel: float) -> float:
@@ -471,8 +484,8 @@ class Trial:
         if not self.punctures and travel > PRE_PUSH_ML * ML_M + 1e-9:
             self._zero("more than 0.2 mL pushed before the first puncture")
         # the plunger: held by its static friction until a thumb pushes the thumb rest with BREAKAWAY_F; then the glide
-        # friction (an applied force, F_GLIDE) and damping (a joint drive); a stop at the 0 line that gives only to DETENT_F
-        # of thumb load there
+        # friction (an applied force pair, F_GLIDE) and the liquid's flow through the needle (the joint's damping, FLOW_C); a stop at
+        # the 0 line that gives only to DETENT_F of thumb load there
         thumb = float(smp.thumb_n)
         if self.stuck and thumb >= BREAKAWAY_F - 1e-9:  # the only breakaway: the measured thumb load, never travel
             self.stuck = False
@@ -555,7 +568,7 @@ class Trial:
         # S, and the window from S to the retraction
         p0 = self.punctures[0] if self.punctures else None
         if (self.t_S is None and p0 is not None and p0.travel_first is not None
-                and not self.retracted and volume(travel) <= grad_below(volume(p0.travel_first)) + 1e-9):
+                and not self.retracted and volume(travel) <= s_line(volume(p0.travel_first)) + 1e-9):
             n0 = p0.n_out
             self.t_S, self.vol_S, self.window = self.t, volume(travel), True
             self.pose_S = (hub.copy(), *pitch_yaw(a, n0))
@@ -995,7 +1008,7 @@ if os.environ.get("INJ_SOLVER"):
     _AWAKE = {**_AWAKE, "velocity_iterations": 4, "gyroscopic": True, "max_depenetration": 0.01, "stabilization": 1e-5}
 SYR_MASS = 0.009  # kg with 1 mL of water, less the plunger, cap and needle (TO MEASURE)
 SYRINGE = yb.Body.build("syringe", tuple(SYR_AT), SYRINGE_SHAPES, mass=SYR_MASS, com=(-0.040, 0.0, 0.0), friction=GRIP_FRICTION,
-                        torsional_patch=0.004, contact_report=True, solver_iterations=32, **_AWAKE)
+                        torsional_patch=0.004, contact_report=True, solver_iterations=32, articulation_root=True, **_AWAKE)
 CARRIER = yb.Body.build("carrier", tuple(SYR_AT + [NEEDLE_L / 2, 0.0, 0.0]), [B((0.0, 0.0, 0.0), (0.002, 0.001, 0.001), None, collide=False)],
                         mass=0.001, inertia=(1e-8, 1e-8, 1e-8), ignore=("syringe",), solver_iterations=32, **_AWAKE)
 NEEDLE = yb.Body.build("needle", tuple(SYR_AT + [NEEDLE_L / 2, 0.0, 0.0]), [
@@ -1021,7 +1034,8 @@ CAP_BODY = yb.Body.build("cap", tuple(CAP_AT), [B((0.0, 0.0, 0.0), (CAP[1] - CAP
 yb.prismatic_joint("J_slide", "syringe", "carrier", tuple(SYR_AT + [NEEDLE_L / 2, 0.0, 0.0]), axis="X", limits=(-(NEEDLE_L + 0.002), 0.0))
 yb.fixed_joint("J_lock", "syringe", "carrier", tuple(SYR_AT + [NEEDLE_L / 2, 0.0, 0.0]))
 yb.prismatic_joint("J_sense", "carrier", "needle", tuple(SYR_AT + [NEEDLE_L / 2, 0.0, 0.0]), axis="X", limits=(-0.004, 0.0005), drive=(K_SENSE, 0.5, 0.0))
-yb.prismatic_joint("J_plunger", "syringe", "plunger", tuple(PLUNGER_AT), axis="X", limits=(0.0, TRAVEL_MAX), drive=(0.0, PLUNGER_C, 0.0))
+yb.prismatic_joint("J_plunger", "syringe", "plunger", tuple(PLUNGER_AT), axis="X", limits=(0.0, TRAVEL_MAX),
+                   drive=(0.0, FLOW_C, 0.0), articulated=True)
 # the stopper's stiction (J_stick, below) and the 0 line's stop (STOPS: a D6 limit on the slide only), on from the
 # start and switched OFF by the rule when the robot's contact load on the plunger passes each one's load. Spike 3: PhysX break forces broke under
 # barrel loads with no thumb (the 15 N grip test, the cap's pull), and a free stopper on its damped slide crept several
@@ -1041,6 +1055,16 @@ for _name, _at, _ in STOPS:
 yb.prismatic_joint("J_cap", "syringe", "cap", tuple(CAP_AT), axis="X", limits=(0.0, 0.003), drive=(CAP_K, 5.0, 0.0))
 yb.d6_joint("J_tissue", "trainer", "syringe", tuple(GEOM.site), tuple(SYR_AT + [NEEDLE_L, 0.0, 0.0]), (0.0, 0.0, 0.0, 1.0),
             {"rotY": (-ENGAGE_DEG, ENGAGE_DEG), "rotZ": (-ENGAGE_DEG, ENGAGE_DEG)}, on=False)
+
+# INJ_PUSHONLY (diagnostics only, experiment 5; unset in every scored run): the barrel is held still on its rest by a
+# ranged D6 stop (0.1 mm, 0.2 deg), authored on from the start, so the left finger's push can be tested alone on the
+# production syringe (dynamic barrel, same plunger, joints and resistance)
+PUSHONLY = os.environ.get("INJ_PUSHONLY", "")
+if PUSHONLY:
+    _hold = tuple(SYR_AT + [-0.040, 0.0, 0.0])
+    yb.d6_joint("J_hold_rest", "rest", "syringe", _hold, _hold, (0.0, 0.0, 0.0, 1.0),
+                {"transX": (-0.0001, 0.0001), "transY": (-0.0001, 0.0001), "transZ": (-0.0001, 0.0001),
+                 "rotX": (-0.2, 0.2), "rotY": (-0.2, 0.2), "rotZ": (-0.2, 0.2)})
 
 OBJECTS = [STAND, TRAINER, TRAY, REST, SHARPS, CUP, CAMERAS, SYRINGE, CARRIER, NEEDLE, PLUNGER, CAP_BODY]
 STATIC = ("stand", "trainer", "tray", "rest", "sharps", "cup", "camera_mounts")
@@ -1490,6 +1514,8 @@ def _sample(env, dt: float) -> None:
         yb.push(env, n, tuple(np.asarray(f, float)), tuple(np.asarray(tq, float)))
     SENSE["wrench_set"] = {n: (np.round(np.asarray(f, float), 3).tolist(), np.round(np.asarray(tq, float), 4).tolist()) for n, (f, tq) in wrench.items()}
     off_skin = not TRIAL.engaged and not GEOM.on_skin(tip, 0.003) and float(tip[0]) < GEOM.skin_x - 0.003
+    run = 0.0 if thumb >= THUMB_ON_N - 1e-9 else SENSE.get("thumb_off_run", 0.0) + dt  # (diagnostics: the thumb's longest time off)
+    SENSE.update(thumb_off_run=run, thumb_off_max=max(run, SENSE.get("thumb_off_max", 0.0)), thumb_lo=min(thumb, SENSE.get("thumb_lo", 1e9)))
     SENSE.update(travel=travel, travel_vel=tv, tip_force=force, thumb=thumb, thumb_max=max(thumb, SENSE.get("thumb_max", 0.0)),
                  thumb_win=max(thumb, SENSE.get("thumb_win", 0.0)), phantom=max(SENSE.get("phantom", 0.0), force if off_skin and not TRIAL.cap_on and not TRIAL.retracted else 0.0),
                  cap_slide=cap_slide, carrier=carrier, gap=TRIAL.gap, in_muscle=TRIAL.in_muscle_now, samples=SENSE["samples"] + 1)
@@ -1675,27 +1701,6 @@ def _on_step(env) -> None:
               f"syringe {np.round(1000 * sy.pos, 1).tolist()} cap {np.round(1000 * cap.pos, 1).tolist()}", flush=True)
 
 
-def _composer_report() -> dict:
-    """What Isaac Lab's wrench composers hold now for the syringe's bodies (world force at the CoM, world torque, and the
-    composed body-frame force as last applied), read from the live env (diagnostics; {} offline)."""
-    env = _LAST.get("env")
-    out = {}
-    if env is None:
-        return out
-    for n in ("syringe", "plunger", "carrier", "needle"):
-        try:
-            c = env.unwrapped.scene[n].permanent_wrench_composer
-            out[n] = {"f_com_w": np.round(yb.as_numpy(c.global_force_at_com_w)[0, 0], 3).tolist(),
-                      "f_w": np.round(yb.as_numpy(c.global_force_w)[0, 0], 3).tolist(),
-                      "t_w": np.round(yb.as_numpy(c.global_torque_w)[0, 0], 4).tolist(),
-                      "f_b_out": np.round(yb.as_numpy(c.out_force_b)[0, 0], 3).tolist(), "active": bool(c.active)}
-            inst = env.unwrapped.scene[n].instantaneous_wrench_composer
-            out[n]["inst_active"] = bool(inst.active)
-        except Exception as e:  # noqa: BLE001  (diagnostics: never raised)
-            out[n] = type(e).__name__
-    return out
-
-
 def plunger_trace() -> str:
     """Every 0.25 s with INJ_TRACE: the plunger's joints as the stage has them now (enabled, break force; the GPU's
     broken state is not readable, so `holds` is read from the measured slide: J_stick holds while travel stays within
@@ -1715,7 +1720,7 @@ def plunger_trace() -> str:
            + "".join(f"{n} {js[n].get('enabled', js[n])} " for n, _, _ in STOPS)
            + f"; within the rule's limit {tr <= TRIAL.limit() + 0.0002}; J_plunger {js['J_plunger']}; J_lock {js['J_lock']}; "
            f"rule stuck {TRIAL.stuck} stops passed {TRIAL.passed}/{len(STOPS)} limit {1000 * TRIAL.limit():.2f} mm retracted {TRIAL.retracted}; "
-           f"wrench set {SENSE.get('wrench_set')}; composer {_composer_report()}")
+           f"wrench set {SENSE.get('wrench_set')}")
     SENSE["thumb_win"] = 0.0
     SENSE.pop("plunger_left", None)
     SENSE.pop("plunger_right", None)

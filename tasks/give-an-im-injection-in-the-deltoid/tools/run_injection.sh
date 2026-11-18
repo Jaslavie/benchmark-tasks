@@ -3,6 +3,7 @@
 # usage: run_injection.sh NAME MAX_STEPS scripted|dream [DEMO_MODE] [GPU] [ENV=VAL ...]
 #   DEMO_MODE (scripted only; ignored for dream): full (default), spike, steep
 #   ENV=VAL: e.g. INJ_HEIGHT=0|1|2 (spacer: none, one, two 18.3 mm layers), INJ_TRAINER_T=0.050|0.043 (m)
+#   EPOCHS=n: n trials in one process (the scene is reset between them)
 #   GPU: the index to run on (default 0). Refuses to start unless it has NEED_MB (default 24000) MiB free.
 #   This script never kills a process.
 # Paths from the environment: ARENA_DIR (the IsaacLab-Arena checkout, default /workspace/$USER/IsaacLab-Arena) and
@@ -33,7 +34,7 @@ for kv in "$@"; do export "$kv"; done
 INSTR="Give the 1 mL dose in the syringe as an intramuscular injection in the training arm's deltoid, pushing the plunger slowly and steadily. Push it all the way so the needle retracts, then put the syringe in the sharps container and the needle cap in the waste cup."
 COMMON=(--embodiment yam_arena -E task="$HERE/im_injection.py" -E device=cuda:0 -E object_jitter=0 -E control_hz=20
         -E cam_width=320 -E cam_height=176 --instruction "$INSTR" --scorer task_score --max-steps "$MAX" --seed 0
-        --no-prompt --store-frames --log-dir "$L/$NAME")
+        --no-prompt --store-frames --log-dir "$L/$NAME" ${EPOCHS:+--epochs "$EPOCHS"})
 cd "$HERE"
 if [ "$POLICY" = scripted ]; then
   inspect-robots run --policy yam_scripted "${COMMON[@]}" > "$L/$NAME.log" 2>&1

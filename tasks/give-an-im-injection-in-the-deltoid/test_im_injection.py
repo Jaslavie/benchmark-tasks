@@ -158,9 +158,9 @@ def test_engagement_needs_1_n_and_the_needle_bare():
     assert r2.tr.engaged
 
 
-def test_s_is_the_first_graduation_below_the_start():
-    """S: the edge reaches (on or past) the first printed 0.1 mL graduation below where it stood at the first in-muscle
-    frame: from 1.0 mL, the 0.9 line; from 0.97 mL, also the 0.9 line."""
+def test_s_is_one_graduation_below_the_start():
+    """S: the edge reaches (on or past) the printed graduation 0.1 mL below its reading, to the nearest graduation, at
+    the first in-muscle frame: from 1.0 mL, the 0.9 line; from 0.97 or 1.0002 mL, also the 0.9 line."""
     r = Run().uncap().insert().step(30)
     assert r.tr.first().travel_first == 0.0 and r.tr.t_S is None
     r.push(0.099)
@@ -168,7 +168,43 @@ def test_s_is_the_first_graduation_below_the_start():
     r.push(0.002)
     assert r.tr.t_S is not None and r.tr.vol_S <= 0.9 + 1e-9 and r.tr.vol_S == pytest.approx(0.9, abs=0.002)
     assert T.grad_below(1.0) == pytest.approx(0.9) and T.grad_below(0.97) == pytest.approx(0.9) and T.grad_below(0.9) == pytest.approx(0.8)
+    for vol, line in ((1.0, 0.9), (1.0002, 0.9), (1.04, 0.9), (0.97, 0.9), (0.95, 0.9), (0.9, 0.8), (0.9003, 0.8), (0.94, 0.8)):
+        assert T.s_line(vol) == pytest.approx(line), vol
     assert T.grad_index(0.95) == 10 and T.grad_index(0.9) == 9 and T.GRAD_ML == 0.1
+
+
+@pytest.mark.parametrize("hair", [-3e-6, -1e-7, 0.0, 2e-6])
+def test_s_does_not_fire_at_insertion_with_the_stopper_a_hair_off_the_line(hair):
+    """The recorded fault: the stopper read a hair above the 1.0 mL line (travel about -0.003 mm) at the first in-muscle
+    frame, the 'first graduation below' was then the 1.0 line itself, and S fired at the insertion: the rest of the
+    insertion counted as the needle moving and the wait before the push as a stop. S is now the 0.9 line for any reading
+    that rounds to 1.0, so the same run has no S until the push, and scores 1.0."""
+    assert T.grad_below(T.volume(-3e-6)) == pytest.approx(1.0)  # the old rule's line for that reading: the fault
+    r = Run().uncap()
+    r.travel = hair
+    r.insert()
+    assert r.tr.first().travel_first == hair and r.tr.in_muscle_now
+    r.travel = 1e-6  # the stopper settles back across the 1.0 line with nothing pushing
+    r.step(round(5.5 / DT))  # and the hand waits 5.5 s before the push
+    assert r.tr.t_S is None and not r.tr.moved and not r.tr.stopped
+    r.travel = 0.0
+    r.push(0.099)
+    assert r.tr.t_S is None
+    r.push(0.002)
+    assert r.tr.t_S is not None and r.tr.vol_S == pytest.approx(0.9, abs=0.002)
+    r.push(0.899).retract()
+    assert r.tr.steady() and r.tr.still() and not r.tr.moved and not r.tr.stopped and r.end() == 1.0
+
+
+def test_a_push_during_the_insertion_starts_s_there():
+    """S is the push's start wherever the needle is: pushing 0.1 mL with the hub still 4 mm off the skin starts S there,
+    and the last 4 mm of insertion then count as the needle moving (0.75)."""
+    r = Run().uncap().insert(to_gap=0.004)
+    assert r.tr.in_muscle_now and r.tr.t_S is None
+    r.push(0.11)
+    assert r.tr.t_S is not None
+    r.insert().push(0.89).retract()
+    assert r.tr.moved and r.end() == 0.75
 
 
 def test_insertion_before_s_is_not_counted_as_moving():
@@ -422,8 +458,10 @@ def test_press_reaches_the_breakaway_and_the_detent_on_the_softest_arm():
     ctl = D.PushCtl(0.0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F)
     k = D.ARM_K_MIN
     assert k * ctl.press_max >= T.BREAKAWAY_F + D.PRESS_OVER - 1e-9
-    assert k * ctl.lead_cap > T.F_GLIDE and ctl.lead_cap == D.LEAD == 0.015 and k * ctl.lead_detent >= T.DETENT_F + D.DETENT_OVER - 1e-9
-    cross, _flips, _glide, retracted = _arm_push(k, 41.0, 100.0, 0.5)
+    push_f = T.F_GLIDE + T.FLOW_C * D.PUSH_V  # the glide and the liquid's resistance at the taught rate (about 3.3 N)
+    ctl = D.PushCtl(0.0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F, PUSH_F=push_f)
+    assert k * ctl.lead_cap >= push_f + D.PUSH_OVER - 1e-9 and k * ctl.lead_detent >= T.DETENT_F + D.DETENT_OVER - 1e-9
+    cross, _flips, _glide, retracted = _arm_push(k, T.FLOW_C, 100.0, 0.5)
     press_max, surge, off_max = _arm_push.last
     gaps = [b[1] - a[1] for a, b in zip(cross, cross[1:])]
     assert retracted and len(cross) == 5 and all(1.6 <= g <= 2.4 for g in gaps), gaps
@@ -563,12 +601,9 @@ def test_rebuilt_joints_are_not_toggled_at_reset():
 
 
 def test_plunger_glide_is_an_applied_2_n_friction_from_breakaway_to_retraction():
-    """GPU joint drives are capped (spike 14: 41 N s/m effective for 13,200 authored), so the stopper's ~2 N glide is an
-    applied force: none while J_stick holds; after the breakaway F_GLIDE against the slide's motion either way once the
-    rubber's GLIDE_Z0 of presliding is taken up; the barrel takes minus it; and on after the retraction, holding the
-    retracted plunger (a VanishPoint's plunger is locked down; spikes 16, 19c: free, it crept back 19.6 -> 8.2 mm)."""
-    assert T.PLUNGER_C == 770.0  # authored at gain 1 (acts at about 40-75 N s/m on the GPU)
-    assert T.yb._JOINTS["J_plunger"].drive == (0.0, T.PLUNGER_C, 0.0)
+    """The stopper's ~2 N glide is an applied force pair: none while J_stick holds; after the breakaway F_GLIDE against
+    the slide's motion either way once the rubber's GLIDE_Z0 of presliding is taken up, whatever the speed; the barrel
+    takes minus it; and on after the retraction, holding the retracted plunger (a VanishPoint's plunger is locked down)."""
     assert T.F_GLIDE == 2.0 and T.F_GLIDE < T.BREAKAWAY_F
     r = Run().uncap()
     r.step(10, v_tr=0.00169)
@@ -585,6 +620,8 @@ def test_plunger_glide_is_an_applied_2_n_friction_from_breakaway_to_retraction()
     assert r.tr.plunger_n == pytest.approx(T.F_GLIDE)  # drawn back: against that motion
     r.step(5, v_tr=0.0)
     assert r.tr.plunger_n == pytest.approx(T.F_GLIDE)  # at rest the rubber's shear holds (it springs back at most Z0)
+    r.step(240, v_tr=0.02)
+    assert r.tr.plunger_n == pytest.approx(-T.F_GLIDE)  # ten times faster: the same (the rate term is the joint's damping)
     g = T.Glide()
     g.step(0.001, DT, True)
     assert g.step(0.0, DT, False) == 0.0 and g.z == 0.0  # off (stuck): no force, the shear let go
@@ -592,13 +629,40 @@ def test_plunger_glide_is_an_applied_2_n_friction_from_breakaway_to_retraction()
     assert "self.glide.step(float(smp.travel_vel) * smp.dt, smp.dt, not self.stuck)" in src  # on after the retraction too
 
 
+def test_flow_resistance_is_the_articulation_joints_damping():
+    """The liquid through the 25 G x 1 in needle (Hagen-Poiseuille, water) is J_plunger's zero-velocity damping drive, and
+    the barrel and plunger are one reduced-coordinate articulation so the solver integrates it exactly (as two free
+    bodies on a maximal joint it acted at about 63 N s/m of the authored value with the barrel held by contact, and the
+    glide's force pair cancelled). The constant is the formula's, not a tuned one."""
+    mu, L, r, A = 1.0e-3, 0.0254, 0.13e-3, 1.0e-6 / T.ML_M  # Pa s, m, m (bore 0.26 mm), m2 (1 mL per ML_M of travel)
+    c = 8.0 * mu * L * A * A / (math.pi * r ** 4)
+    assert c == pytest.approx(793.0, abs=1.0) and T.FLOW_C == pytest.approx(c, rel=0.01)
+    assert T.FLOW_C * 0.1 * T.ML_M == pytest.approx(1.34, abs=0.01)  # N at the taught 0.1 mL/s
+    j = T.yb._JOINTS["J_plunger"]
+    assert j.kind == "prismatic" and j.drive == (0.0, T.FLOW_C, 0.0) and j.articulated
+    assert T.SYRINGE.articulation_root and not T.PLUNGER.articulation_root
+    others = [x for x in T.yb._JOINTS.values() if x.name != "J_plunger"]
+    assert others and not any(x.articulated for x in others)  # the stops, the lock, the cap, the tissue: maximal joints as before
+    src = (HERE / "yam_bodies.py").read_text()
+    assert "joint.CreateExcludeFromArticulationAttr(not j.articulated)" in src and "UsdPhysics.ArticulationRootAPI.Apply(prim)" in src
+    assert "view.set_dof_positions(zeros, idx)" in src  # a reset puts the plunger back through the articulation
+    assert T.yb._art_root("plunger") == "syringe" == T.yb._art_root("syringe") and T.yb._art_root("cap") is None
+    T.yb._ART_FORCES.clear()
+    T.yb.push(None, "plunger", (-2.0, 0.0, 0.0))  # a link's force is queued for the articulation's single call, not sent per body
+    T.yb.push(None, "syringe", (2.0, 0.0, 0.0), (0.0, 0.1, 0.0))
+    q = T.yb._ART_FORCES["syringe"]
+    assert q["plunger"][0].tolist() == [-2.0, 0.0, 0.0] and q["syringe"][0].tolist() == [2.0, 0.0, 0.0] and q["syringe"][1].tolist() == [0.0, 0.1, 0.0]
+    T.yb._ART_FORCES.clear()
+    assert "_flush_art_forces(env)" in src and "is_global=True)" in src
+
+
 def test_glide_is_explicitly_stable_at_240_hz():
     """The velocity law F = -F_GLIDE tanh(v / V_EPS) at V_EPS 0.5-1 mm/s has slope*dt/m of thousands on the 2 g plunger and
     10-50 with a 0.2-1 kg hand on it (it must stay under 1), and clamped to m |v| / dt it gives under 0.001 N at 0.1 mL/s.
-    The elasto-plastic glide's stiffness F_GLIDE / GLIDE_Z0 keeps k dt / c under 1 on the free plunger against the drive's
-    implicit 41 N s/m (the GPU's measured damping), and k dt^2 / m under 1 with a 0.2 kg hand on it."""
+    The elasto-plastic glide's stiffness F_GLIDE / GLIDE_Z0 keeps k dt / c under 1 on the free plunger against the joint's
+    implicit damping (FLOW_C; also at the least a 25 G bore allows, 500 N s/m), and k dt^2 / m under 1 with a 0.2 kg hand on it."""
     k = T.F_GLIDE / T.GLIDE_Z0
-    assert k * DT / 41.0 < 0.5 and k * DT * DT / 0.2 < 0.5
+    assert k * DT / T.FLOW_C < 0.05 and k * DT / 500.0 < 0.05 and k * DT * DT / 0.2 < 0.5
     for v_eps in (0.0005, 0.001):
         assert T.F_GLIDE / v_eps * DT / 0.002 > 1000 and T.F_GLIDE / v_eps * DT / 1.0 > 8
     assert 0.002 * (0.1 * T.ML_M) / DT < 0.001
@@ -620,7 +684,7 @@ def _free_stopper(c_eff, noise, v0, seconds=2.0, seed=0):
     return 0.005, x, top
 
 
-@pytest.mark.parametrize("c_eff", [20.0, 41.0, 75.0])
+@pytest.mark.parametrize("c_eff", [500.0, 790.0, 1250.0])
 @pytest.mark.parametrize("noise", [0.0, 2e-5])
 def test_glide_cannot_drive_a_free_stopper(c_eff, noise):
     """Spike 10: the old velocity friction drove the stopper on with no thumb (0.8 to 0 mL in 1.6 s). Free, at rest or
@@ -646,7 +710,8 @@ def _arm_push(k, c_eff, c_arm, M, dropout=False):
     xp = vp = vh = 0.0
     xh = -D.APPROACH_BACK  # the hand starts 3 mm behind the thumb rest (the demo's approach)
     stuck, through, retracted = True, False, False
-    ctl = D.PushCtl(0.0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F)
+    ctl = D.PushCtl(0.0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F,
+                    PUSH_F=T.F_GLIDE + T.FLOW_C * D.PUSH_V)
     g = T.Glide()
     t, N, thumb, prev, t_rel, t_ret, sign, flips = 0.0, 0.0, 0.0, 0.0, None, None, 0, 0
     press_max, x_rel, surge, off, off_max, x_S = 0.0, None, 0.0, 0.0, 0.0, None
@@ -692,8 +757,8 @@ def _arm_push(k, c_eff, c_arm, M, dropout=False):
             for x in lines:
                 if xp >= x - T.LINE_TOL and x not in [c[0] for c in cross]:
                     cross.append((x, t))
-            if x_S is None and T.volume(xp) <= T.grad_below(1.0) + 1e-9:
-                x_S = xp  # S: the 0.9 graduation (the first below the start, 1.0 mL with the hub on the skin)
+            if x_S is None and T.volume(xp) <= T.s_line(1.0) + 1e-9:
+                x_S = xp  # S: the 0.9 graduation (one below the start's reading, 1.0 mL)
             if x_S is not None and len(cross) < 5:  # S to the 0 line: the thumb-on clause's reading
                 off = off + dt if N < T.THUMB_ON_N else 0.0
                 off_max = max(off_max, off)
@@ -707,17 +772,16 @@ def _arm_push(k, c_eff, c_arm, M, dropout=False):
 
 
 @pytest.mark.parametrize("k", [165.0, 300.0, 500.0, 700.0, 1500.0, 3000.0])
-@pytest.mark.parametrize("c_eff", [41.0, 75.0])
+@pytest.mark.parametrize("c_eff", [500.0, 790.0, 1250.0])
 @pytest.mark.parametrize("c_arm", [30.0, 100.0, 300.0])
 @pytest.mark.parametrize("M", [0.2, 0.5, 1.0])
 @pytest.mark.parametrize("dropout", [False, True])
 def test_push_is_steady_against_the_applied_glide(k, c_eff, c_arm, M, dropout):
     """The demo's PushCtl, as it is, on a springy arm pushing the thumb rest only, against the 3 N stiction, the applied
-    2 N glide and the 10 N detent (toy model, `_arm_push`): each 0.2 mL line 1.6-2.4 s after the previous one, the glide
-    at about 2 N while sliding, the retraction reached, and no chatter (the velocity's sign flips less than once a second).
-    One corner (the stiffest arm, 700 N/m, with the least damping, 30 N s/m, at 0.2-1 kg and the GPU's 41 N s/m) cycles at
-    the 20 Hz control rate, 11-16 flips/s: PushCtl's proportional term (KP_PUSH 6 times the lag) overshoots there; with KP
-    3 it gives 0.3 flips/s, so it is the controller, not the glide (the glide stays at 1.7-1.9 N); its timing still holds."""
+    2 N glide, the flow's damping and the 10 N detent (toy model, `_arm_push`: arms of 165-3,000 N/m, the flow at the
+    least, nominal and most a 25 G bore gives, 500 / 790 / 1,250 N s/m, with and without a contact reading that drops out
+    every other step): each 0.2 mL line inside the rule's band and, on the measured arms, 1.6-2.4 s after the previous
+    one; the glide at about 2 N while sliding; the thumb never off; the retraction reached; no chatter."""
     cross, flips_s, glide, retracted = _arm_push(k, c_eff, c_arm, M, dropout)
     assert len(cross) == 5 and retracted, cross
     press_max, surge, off_max = _arm_push.last  # E2: a 12 N impact and a 10 mm surge; gentle contact and the release keep both down
@@ -725,14 +789,10 @@ def test_push_is_steady_against_the_applied_glide(k, c_eff, c_arm, M, dropout):
     assert off_max < T.THUMB_GAP_S, off_max  # the thumb on the thumb rest from S to the 0 line (the rule's thumb-on clause)
     gaps = [b[1] - a[1] for a, b in zip(cross, cross[1:])]
     assert all(T.STEP_S[0] <= g <= T.STEP_S[1] for g in gaps), gaps  # the rule's band, on every arm (no runaway)
-    if k <= 700.0 and not dropout:  # the demo's own margin on the arms the YAM measured (165-390 N/m) and above
+    if k <= 700.0 and not dropout and c_eff == T.FLOW_C:  # the demo's own margin, on the measured arms at the nominal bore
         assert all(1.6 <= g <= 2.4 for g in gaps), gaps
-        assert 1.6 <= glide <= 2.1, glide
-        if not (k == 700.0 and c_arm == 30.0):
-            assert flips_s < 1.0, flips_s
-    # (stiffer arms, 1,500-3,000 N/m, and a contact view that reads 0 every other step stay inside the band, thumb on, but
-    # chatter at the 20 Hz control rate (2-18 flips/s) from the proportional gain; inj-S2b-full's 1.2 s dose was a runaway,
-    # which none of these shows)
+        assert 1.7 <= glide <= 2.05, glide
+    assert flips_s < 1.0, flips_s
 
 
 def _engaged_trial():
@@ -1558,53 +1618,6 @@ def test_plunger_trace_runs_offline_and_names_every_joint():
     assert T.SENSE["thumb_win"] == 0.0
 
 
-@pytest.mark.parametrize("k", [300.0, 390.0, 700.0])
-@pytest.mark.parametrize("c_eff,lo,hi", [(900.0, 1.6, 2.4), (1200.0, 1.6, 2.4), (1800.0, 1.6, 2.4)])
-def test_push_is_steady_against_a_springy_arm_and_a_weakly_damped_plunger(k, c_eff, lo, hi):
-    """(Superseded by the applied-glide model, test_push_is_steady_against_the_applied_glide; kept as the no-glide
-    fallback, at the damping where a thumb that stays on can still push at the taught rate. With no glide and 40-230 N
-    s/m only, the rule's thumb-on floor alone (0.2 N, the push's 1 mm preload 0.3-0.7 N) runs the stopper at 1-17 mm/s,
-    too fast for 1 s per 0.2 mL: a frictionless plunger cannot be pushed slowly with the thumb kept on, which is why the
-    glide is applied.) Spikes 11-12: the springy arm (about 390 N/m) and a weakly damped plunger (GPU: about 70-230 N s/m effective)
-    ran the stopper at about 7.5 mm/s (0.45 s per 0.2 mL). Toy model at 240 Hz: the fingertip on a 390 N/m spring from the
-    hand's command, pushing only; stiction released at 3 N (0.2 mm play); damping c_eff; the 0 line's stop gives at 10 N.
-    The demo's push controller must cross each 0.2 mL line 1.6-2.4 s after the previous one at the GPU's damping (probe
-    1: about 65-75 N s/m; spike 10 about 230) and at the calibrated glide (about 1,200 N s/m effective, 900-1,800 for a
-    gain off by 1.5x either way). Spike 13 (calibration pending): the lead's integral alone cycled at 1.3-2.7 s here."""
-    import demo as D
-
-    dt = 1.0 / 240.0
-    p, stuck, through = 0.0002, True, False
-    ctl = D.PushCtl(p, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F)
-    thumb, t, cross = 0.0, 0.0, []
-    lines = [T.ZERO_TRAVEL - (v * T.ML_M) for v in (0.8, 0.6, 0.4, 0.2, 0.0)]
-    for _ in range(round(45.0 / 0.05)):  # the lead builds to 3 N before the stopper gives
-        cmd = ctl.step(p, thumb, not stuck)
-        thumb = 0.0
-        for _ in range(12):
-            t += dt
-            f = k * max(0.0, (ctl.tr0 + cmd) - p)  # the spring from the command to the rod, pushing only
-            thumb = max(thumb, f)
-            if stuck:
-                stuck = f < T.BREAKAWAY_F
-                if stuck:
-                    p = min(p + f / 2e4, ctl.tr0 + 0.0002)  # within the stop's play
-                    continue
-            limit = T.TRAVEL_MAX if through else T.ZERO_TRAVEL
-            if not through and p >= T.ZERO_TRAVEL - 1e-9 and f >= T.DETENT_F:
-                through = True
-            p = min(p + f / c_eff * dt, limit)
-            for x in lines:
-                if p >= x and x not in [c[0] for c in cross]:
-                    cross.append((x, t))
-        if p >= T.RETRACT_AT:
-            break
-    assert len(cross) == 5, cross
-    gaps = [b[1] - a[1] for a, b in zip(cross, cross[1:])]
-    assert all(lo <= g <= hi for g in gaps), gaps
-    assert through and p >= T.RETRACT_AT, p
-
-
 def test_bare_needle_back_in_the_cap_after_uncapping_is_a_touch():
     """Review note: the bare needle touching the dropped cap (or recapped) after uncapping is a 0; the cap's inside is
     exempt only while the needle is first leaving it. The cap is filtered from the needle, so it is read from geometry."""
@@ -1700,7 +1713,7 @@ def test_steady_push_text_matches_the_rule():
     assert T.THUMB_ON_N == D.THUMB_ON_N == 0.2 and T.THUMB_GAP_S == 0.1
     for frag in ("1-4 s per 0.2 mL prorated by its volume", "each later line is reached 1-4 s after the previous one",
                  "reached: on or past it", "no stop (3 s in which the edge reaches no new printed 0.1 mL graduation)",
-                 "first printed graduation below its place at the first in-muscle frame", "the hub touches the skin (side view)",
+                 "graduation 0.1 mL below its reading (to the nearest graduation) at the first in-muscle frame", "the hub touches the skin (side view)",
                  "gap of 2 mm or more between the pushing finger and the thumb rest", "3 consecutive", "hidden", "any wait at the 0 line are not timed"):
         assert frag in sc, frag
     for frag in ("under 0.2 N", "for 0.1 s or more", "Timing ends on the frame the edge reaches the 0 line", "3 N / 2 N",

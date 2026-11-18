@@ -37,12 +37,9 @@ PRESS_V = 0.004  # m/s the command advances while pressing for the breakaway (0.
 PRESS_OVER = 1.0  # N: the press stops growing this far over BREAKAWAY_F (it must reach BREAKAWAY_F on any arm)
 APPROACH_BACK, APPROACH_V, APPROACH_MAX = 0.003, 0.002, 0.004  # m behind the touch pose, m/s, m at most past it
 CONTACT_F = 0.3  # N of measured thumb load that marks the touch
-RELEASE_PRE = 0.0003  # m past the fingertips at the release and while the stopper is ahead: 0.05-0.9 N on a 165-3,000 N/m
-# arm, under the 2 N glide (inj-S2b-full: S2's 1 mm, about 2.6 N on the GPU's arm by its 14 mm/s runaway, was over it)
-LEAD = 0.015  # m of lead in the push (full19d)
 LEAD_GAIN = 0.1  # the lead grows by this fraction of the lag each control step
-KP_PUSH = 6.0  # the command runs this many times the stopper's lag ahead of the target (proportional)
-AHEAD_HOLD = 0.0005  # m: the stopper this far ahead of the target holds the command at the target (the fingertips on it)
+KP_PUSH = 1.0  # the command runs this many times the stopper's lag ahead of the target (proportional; 6 chattered on stiff arms)
+PUSH_OVER = 1.0  # N: the lead may hold this much more than the push's nominal force (on the softest arm)
 DETENT_OVER = 2.0  # N: the lead stops growing at DETENT_F + 2 N of measured load
 THUMB_ON_N = 0.2  # N: the rule's thumb-on floor (im_injection.THUMB_ON_N; checked equal in the tests)
 PULL_V, PULL_L = 0.02, 0.045  # the cap off: m/s, m along the barrel
@@ -62,26 +59,25 @@ class PushCtl:
     """The left hand's push on the thumb rest, one control step at a time: returns the hand's command (m along +x from
     the pose where its fingertips just touch the thumb rest with the stopper at `tr0`).
 
-    Approach (E2: the fingertips met the thumb rest at 12 N within one sample and the arm's stored force shoved the
-    stopper 10 mm): from APPROACH_BACK behind the touch pose at APPROACH_V, stopping the moment the measured thumb load
-    passes CONTACT_F. Press: the command then advances at PRESS_V, no further once the load reaches BREAKAWAY_F +
-    PRESS_OVER (nor (BREAKAWAY_F + PRESS_OVER) / ARM_K_MIN past the touch), until the rule says the stopper has broken
-    loose (`given`: its stuck flag cleared by the measured thumb load; never the stopper's travel, which a stuck stopper
-    also shows as its stop gives under load). Breakaway: the command goes to the fingertips, so the arm's stored force is
-    let go by the hand, not into the stopper; the 0.1 mL/s target restarts from there. Push (full19d's, which kept a
-    steady 1.85-2.49 s per 0.2 mL on the GPU): the target plus a lead that integrates the lag (never below 0: fingers only
-    push; at most LEAD) plus KP_PUSH times the lag; with the stopper more than AHEAD_HOLD ahead the command holds at the
-    target. The force-based caps (ARM_K_MIN) apply only to the press while the stopper is stuck and to the lead against the
-    0 line's stop. Toy-model tests in test_im_injection.py (165-700 N/m, the GPU's 41 N s/m, the 2 N glide)."""
+    Approach: from APPROACH_BACK behind the touch pose at APPROACH_V, stopping the moment the measured thumb load passes
+    CONTACT_F (an earlier demo met the thumb rest at 12 N within one sample). Press: the command advances at PRESS_V, no
+    further once the load reaches BREAKAWAY_F + PRESS_OVER (nor (BREAKAWAY_F + PRESS_OVER) / ARM_K_MIN past the touch),
+    until the rule says the stopper has broken loose (`given`: its stuck flag, cleared by the measured thumb load; never
+    the stopper's travel, which a stuck stopper also shows as its stop gives under load). Push: the hand keeps pressing
+    (the command carries on from where it is: the thumb never leaves the thumb rest) and follows a 0.1 mL/s target from
+    the stopper's place at the breakaway: the target, plus a lead that integrates the stopper's lag either way (the arm
+    is a spring, so the lead is the force it holds: the glide plus the liquid's resistance at the taught rate), plus
+    KP_PUSH times the lag. The liquid's resistance grows with speed, so more force only pushes a little faster: the
+    stopper cannot run ahead of the hand. Past the 0 line the lead grows against the retraction's stop until DETENT_F +
+    DETENT_OVER of measured load. Toy-model tests in test_im_injection.py (165-3,000 N/m arms)."""
 
-    def __init__(self, tr0: float, ZERO_TRAVEL: float, TRAVEL_MAX: float, DETENT_F: float, BREAKAWAY_F: float):
+    def __init__(self, tr0: float, ZERO_TRAVEL: float, TRAVEL_MAX: float, DETENT_F: float, BREAKAWAY_F: float, PUSH_F: float = 3.4):
         self.tr0, self.zero, self.end, self.detent_f, self.breakaway_f = tr0, ZERO_TRAVEL, TRAVEL_MAX, DETENT_F, BREAKAWAY_F
         self.lead, self.t, self.base, self.released = 0.0, 0.0, tr0, False
         self.phase, self.cmd = "approach", -APPROACH_BACK
         self.touch = 0.0  # the command at first touch (the fingertips on the thumb rest)
         self.press_max = (BREAKAWAY_F + PRESS_OVER) / ARM_K_MIN  # m past the touch at most while pressing
-        self.lead_cap = LEAD  # m of lead in the push: full19d's value, about what the 2 N glide at 0.1 mL/s needs on the
-        # softest arm (2.5 N at 165 N/m); S2's (BREAKAWAY_F + 1 N) / 165 N/m = 24 mm ran the dose through in 1.2 s
+        self.lead_cap = (PUSH_F + PUSH_OVER) / ARM_K_MIN  # m of lead in the push: the push's force and 1 N on the softest arm
         self.lead_detent = (DETENT_F + DETENT_OVER) / ARM_K_MIN  # m of lead against the 0 line's stop
 
     def target(self) -> float:
@@ -105,27 +101,63 @@ class PushCtl:
         if self.phase == "press":
             if given:
                 self.phase, self.released = "push", True
-                self.lead, self.t, self.base = 0.0, 0.0, travel
-                self.cmd = self.fingertips(travel) + RELEASE_PRE  # the stored force let go; the fingertips stay on
+                self.t, self.base = 0.0, travel
+                # the hand stays where it is, pressing: what it holds now is the lead the push starts from
+                self.lead = float(np.clip(self.cmd - self.fingertips(travel), 0.0, self.lead_cap))
                 return self.cmd
             if thumb < self.breakaway_f + PRESS_OVER:  # a steady ramp of the load, capped PRESS_OVER over the breakaway
                 self.cmd = min(self.cmd + PRESS_V * DT_CTL, self.touch + self.press_max)
             return self.cmd
         tgt = self.target()
-        cap = self.lead_detent if tgt > self.zero else self.lead_cap
-        if travel - tgt > AHEAD_HOLD and tgt <= self.zero:
-            self.lead = 0.0  # well ahead of the target: hold at the target until it catches up
-        elif thumb < self.detent_f + DETENT_OVER:  # no harder than needed against the 0 line's stop
-            self.lead = float(np.clip(self.lead + LEAD_GAIN * (tgt - travel), 0.0, cap))
-        prop = KP_PUSH * max(0.0, tgt - travel) if tgt <= self.zero else 0.0  # KP times the lag, pushing only
-        self.cmd = min(self.touch + tgt - self.tr0 + self.lead + prop, self.touch + self.end - self.tr0 + cap)
-        # thumb on: with the measured load under twice the rule's floor, the command is kept at least RELEASE_PRE past the
-        # fingertips (0.05-0.9 N on a 165-3,000 N/m arm, under the 2 N glide, so it cannot push the stopper on by itself).
-        # S2 kept 1 mm there: on the GPU's arm that was about 2.6 N (inj-S2b-full ran the dose through in 1.2 s at
-        # 14 mm/s, so (F - 2 N) = 41 N s/m x 14 mm/s), over the glide, and the floor then chased the stopper
-        if thumb < 2.0 * THUMB_ON_N:
-            self.cmd = max(self.cmd, self.fingertips(travel) + RELEASE_PRE)
+        lag = tgt - travel
+        if tgt <= self.zero:
+            self.lead = float(np.clip(self.lead + LEAD_GAIN * lag, 0.0, self.lead_cap))
+            self.cmd = self.touch + tgt - self.tr0 + self.lead + KP_PUSH * lag
+            self.cmd = max(self.cmd, self.fingertips(travel))  # never behind the thumb rest: the fingertips stay on it
+        else:  # on the 0 line's stop: press until it gives (no harder than DETENT_F + DETENT_OVER measured)
+            if thumb < self.detent_f + DETENT_OVER:
+                self.lead = float(np.clip(self.lead + LEAD_GAIN * max(lag, 0.0), 0.0, self.lead_detent))
+            self.cmd = min(self.touch + tgt - self.tr0 + self.lead, self.touch + self.end - self.tr0 + self.lead_detent)
         return self.cmd
+
+
+def _x5_report(T, x5, say):
+    """(pushonly) The official steady-push clause read off the finger-alone push: S at the 0.9 mL graduation, each 0.2 mL
+    line's time, the longest wait for a new 0.1 mL graduation, and the thumb's contact from S to the 0 line."""
+    if not x5:
+        say("X5: the stopper never broke loose")
+        return
+    t, tr, th, lo, off, res = (np.array(c, float) for c in zip(*x5))
+    vol = np.array([T.volume(x) for x in tr])
+
+    def first(v):
+        i = np.nonzero(vol <= v + 1e-9)[0]
+        return None if len(i) == 0 else int(i[0])
+
+    iS, i0 = first(0.9), first(0.0)
+    say(f"X5: breakaway at t {t[0]:.2f} s; S (0.9 mL) at {None if iS is None else round(t[iS] - t[0], 2)} s after it; 0 line at "
+        f"{None if i0 is None else round(t[i0] - t[0], 2)} s")
+    if iS is None or i0 is None:
+        say(f"X5 FAIL: the edge reached {vol.min():.3f} mL only (travel {1000 * tr.max():.2f} mm)")
+        return
+    lines = [(v, first(v)) for v in (0.8, 0.6, 0.4, 0.2, 0.0)]
+    times = [round(float(t[i] - t[iS]), 2) for _, i in lines]
+    gaps = [times[0]] + [round(b - a, 2) for a, b in zip(times, times[1:])]
+    band = [(0.5, 2.0)] + [(1.0, 4.0)] * 4  # the first interval is 0.1 mL: prorated
+    rate_ok = all(a - 1e-6 <= g <= b + 1e-6 for g, (a, b) in zip(gaps, band))
+    grads = [first(round(0.1 * n, 1)) for n in range(8, -1, -1)]
+    waits = np.diff([t[iS]] + [t[i] for i in grads])
+    seg = slice(iS, i0 + 1)
+    off_s = float(off[i0] if off[iS] <= 1e-9 else off[seg].max())  # the longest run under the floor (physics-step resolution)
+    under = th[seg] < T.THUMB_ON_N
+    rate = (tr[i0] - tr[iS]) / (t[i0] - t[iS])
+    say(f"X5: lines 0.8/0.6/0.4/0.2/0.0 at {times} s after S; intervals {gaps} s (band 0.5-2 then 1-4): rate {'PASS' if rate_ok else 'FAIL'}")
+    say(f"X5: longest wait for a new 0.1 mL graduation {waits.max():.2f} s (stop at {T.STOP_S:g} s): {'PASS' if waits.max() < T.STOP_S else 'FAIL'}")
+    say(f"X5: thumb load S to the 0 line: mean {th[seg].mean():.2f} N, least in any physics step {lo[seg].min():.2f} N, control steps under "
+        f"{T.THUMB_ON_N:g} N {int(under.sum())}/{len(under)}, longest time under it from S {off[seg].max():.3f} s (off at {T.THUMB_GAP_S:g} s): "
+        f"{'PASS' if off[seg].max() < T.THUMB_GAP_S else 'FAIL'}")
+    say(f"X5: stopper {1000 * rate:.2f} mm/s on average; applied resistance mean {res[seg].mean():.2f} N; speed sd over 0.5 s windows "
+        f"{1000 * np.std(np.diff(tr[seg][::10]) / (10 * DT_CTL)):.2f} mm/s")
 
 
 def _unit(v):
@@ -161,7 +193,8 @@ def places(T) -> dict:
 def demo_script(ctx):
     T = ctx.emb.task.module
     mode = ctx.mode
-    if mode not in ("full", "spike", "steep"):
+    pushonly = mode == "pushonly"  # diagnostics (experiment 5): the left finger's push alone, the barrel held on its rest
+    if mode not in ("full", "spike", "steep", "pushonly"):
         raise ValueError(f"unknown mode {mode!r}")
     spike = mode == "spike"
     l, r = ctx.left, ctx.right
@@ -267,174 +300,180 @@ def demo_script(ctx):
         gate("syringe settles on the rest (2 s): moves < 0.5 mm", np.linalg.norm(hub() - h0) < 0.0005, f"{1000 * np.linalg.norm(hub() - h0):.2f} mm")
     poses("start")
 
-    # ---- 1. right: pick the syringe off the rest, from clear space above and behind -----------------------------------
-    def right_pick():
-        at = P["rest"] + grasp
-        yield from r.move(at - 0.07 * A_R, grip=G_R, finger=PRESHAPE_R, t=3.0, label="right: above and behind the barrel, fingers part-open")
-        yield from r.move(at - 0.015 * A_R, t=1.2, label="right: fingers either side of the barrel")
-        yield from r.move(at, t=0.8, label="right: pads level with the barrel")
-        yield from onto(r, at, "right: barrel pinch")
-        yield from r.close(BARREL_W, force=GRIP_BARREL_N, label="right: pinch the barrel")
-        grip_log("right")
-        if spike:
+    if pushonly:
+        _thumb = where(T.EDGE0 - T.ROD_BACK, 0.0, -0.004)
+        _wait = _thumb - TIP_AHEAD * A_LP - 0.030 * X + 0.03 * Y
+        yield from l.move(_wait + [0.0, 0.03, 0.03], grip=G_LPUSH, finger=d.FINGER_CLOSED, t=3.0, label="left: behind the thumb rest, fingers closed")
+        yield from l.move(_wait, t=1.0, label="left: level with the thumb rest")
+    if not pushonly:
+        # ---- 1. right: pick the syringe off the rest, from clear space above and behind -----------------------------------
+        def right_pick():
+            at = P["rest"] + grasp
+            yield from r.move(at - 0.07 * A_R, grip=G_R, finger=PRESHAPE_R, t=3.0, label="right: above and behind the barrel, fingers part-open")
+            yield from r.move(at - 0.015 * A_R, t=1.2, label="right: fingers either side of the barrel")
+            yield from r.move(at, t=0.8, label="right: pads level with the barrel")
+            yield from onto(r, at, "right: barrel pinch")
+            yield from r.close(BARREL_W, force=GRIP_BARREL_N, label="right: pinch the barrel")
+            grip_log("right")
+            if spike:
+                worst = 0.0
+                for _ in range(round(1.0 / d.DT)):
+                    worst = max(worst, abs(travel()))
+                    yield from r.wait(d.DT)
+                gate("plunger at 1.0 mL 1 s after the right hand's pinch (travel < 0.5 mm; at most 1.69 mm, 0.1 mL, meanwhile)",
+                     abs(travel()) < 0.0005 and worst <= 0.1 * T.ML_M, f"{1000 * travel():.2f} mm now, {1000 * worst:.2f} mm at most, thumb {sense('thumb_max'):.2f} N")
+            z0 = hub()[2]
+            yield from carry(P["lift"], 1.5, "right: lift off the rest")
+            rose = hub()[2] - z0
+            say(f"lifted: the syringe rose {1000 * rose:.0f} mm")
+            if rose < 0.035:
+                say(f"SYRINGE NOT HELD (lift): it rose {1000 * rose:.0f} mm")
+            grip_log("right")
+            yield from carry(P["uncap"], 2.5, "right: to the uncapping place")
+            yield from place_syringe(P["uncap"], timeout=1.5, tol=0.001, label="right: at the uncapping place")
+
+        def left_wait():
+            yield from l.move(P["uncap"] + [T.GRASP_CAP, 0.10, 0.04], grip=G_LCAP, finger=PRESHAPE_L, t=4.0, label="left: wait beside the uncapping place")
+
+        yield from ctx.together(right_pick(), left_wait())
+        poses("syringe held at the uncapping place")
+
+        # ---- 2. (spike) the grip holds 15 N along the barrel ---------------------------------------------------------------
+        if spike and env is not None:
+            g0 = in_grip()
             worst = 0.0
-            for _ in range(round(1.0 / d.DT)):
-                worst = max(worst, abs(travel()))
-                yield from r.wait(d.DT)
-            gate("plunger at 1.0 mL 1 s after the right hand's pinch (travel < 0.5 mm; at most 1.69 mm, 0.1 mL, meanwhile)",
-                 abs(travel()) < 0.0005 and worst <= 0.1 * T.ML_M, f"{1000 * travel():.2f} mm now, {1000 * worst:.2f} mm at most, thumb {sense('thumb_max'):.2f} N")
-        z0 = hub()[2]
-        yield from carry(P["lift"], 1.5, "right: lift off the rest")
-        rose = hub()[2] - z0
-        say(f"lifted: the syringe rose {1000 * rose:.0f} mm")
-        if rose < 0.035:
-            say(f"SYRINGE NOT HELD (lift): it rose {1000 * rose:.0f} mm")
-        grip_log("right")
-        yield from carry(P["uncap"], 2.5, "right: to the uncapping place")
-        yield from place_syringe(P["uncap"], timeout=1.5, tol=0.001, label="right: at the uncapping place")
+            for sgn in (1.0, -1.0):
+                T.EXTRA_PUSH[:] = sgn * 15.0 * axis()
+                for _ in range(round(1.0 / d.DT)):
+                    worst = max(worst, abs(travel()))
+                    yield from r.wait(d.DT)
+            T.EXTRA_PUSH[:] = 0.0
+            yield from r.wait(0.5)
+            slip = float(np.linalg.norm(in_grip() - g0))
+            gate("grip with 15 N along the barrel, both ways: slip < 0.5 mm", slip < 0.0005, f"{1000 * slip:.2f} mm")
+            gate("plunger stays at 1.0 mL under the 15 N on the barrel, rod free: travel < 0.5 mm throughout, no retraction",
+                 max(worst, abs(travel())) < 0.0005 and not T.TRIAL.retracted,
+                 f"{1000 * travel():.2f} mm now, {1000 * worst:.2f} mm at most, retracted {T.TRIAL.retracted}, zero {T.TRIAL.zero}")
 
-    def left_wait():
-        yield from l.move(P["uncap"] + [T.GRASP_CAP, 0.10, 0.04], grip=G_LCAP, finger=PRESHAPE_L, t=4.0, label="left: wait beside the uncapping place")
-
-    yield from ctx.together(right_pick(), left_wait())
-    poses("syringe held at the uncapping place")
-
-    # ---- 2. (spike) the grip holds 15 N along the barrel ---------------------------------------------------------------
-    if spike and env is not None:
+        # ---- 3. left: the cap straight off, into the cup ------------------------------------------------------------------
+        cap_at = where(T.GRASP_CAP)
+        yield from l.move(cap_at + 0.07 * Y, grip=G_LCAP, finger=PRESHAPE_L, t=1.5, label="left: level with the cap, 7 cm to its side")
+        yield from l.move(cap_at + 0.002 * Y, t=1.5, label="left: pads above and below the cap")
+        yield from onto(l, where(T.GRASP_CAP), "left: cap pinch", body="cap")
+        yield from l.close(CAP_W, force=GRIP_N, label="left: pinch the cap")
+        yield from l.wait(0.3)  # the pads settle on the cap before the pull (the rule measures the pull from here)
+        grip_log("left", "cap")
         g0 = in_grip()
-        worst = 0.0
-        for sgn in (1.0, -1.0):
-            T.EXTRA_PUSH[:] = sgn * 15.0 * axis()
-            for _ in range(round(1.0 / d.DT)):
-                worst = max(worst, abs(travel()))
-                yield from r.wait(d.DT)
-        T.EXTRA_PUSH[:] = 0.0
-        yield from r.wait(0.5)
-        slip = float(np.linalg.norm(in_grip() - g0))
-        gate("grip with 15 N along the barrel, both ways: slip < 0.5 mm", slip < 0.0005, f"{1000 * slip:.2f} mm")
-        gate("plunger stays at 1.0 mL under the 15 N on the barrel, rod free: travel < 0.5 mm throughout, no retraction",
-             max(worst, abs(travel())) < 0.0005 and not T.TRIAL.retracted,
-             f"{1000 * travel():.2f} mm now, {1000 * worst:.2f} mm at most, retracted {T.TRIAL.retracted}, zero {T.TRIAL.zero}")
+        c0 = ik.tcp_pose(l.q, l.base)[0]
+        a0 = axis()  # the barrel's axis as measured now, after both pinches
 
-    # ---- 3. left: the cap straight off, into the cup ------------------------------------------------------------------
-    cap_at = where(T.GRASP_CAP)
-    yield from l.move(cap_at + 0.07 * Y, grip=G_LCAP, finger=PRESHAPE_L, t=1.5, label="left: level with the cap, 7 cm to its side")
-    yield from l.move(cap_at + 0.002 * Y, t=1.5, label="left: pads above and below the cap")
-    yield from onto(l, where(T.GRASP_CAP), "left: cap pinch", body="cap")
-    yield from l.close(CAP_W, force=GRIP_N, label="left: pinch the cap")
-    yield from l.wait(0.3)  # the pads settle on the cap before the pull (the rule measures the pull from here)
-    grip_log("left", "cap")
-    g0 = in_grip()
-    c0 = ik.tcp_pose(l.q, l.base)[0]
-    a0 = axis()  # the barrel's axis as measured now, after both pinches
+        def tcp_local():
+            """The left TCP (the simulator's) in the syringe's frame."""
+            sy = syr()
+            return sy.rotation().T @ (pad_middle(l) - sy.pos)
 
-    def tcp_local():
-        """The left TCP (the simulator's) in the syringe's frame."""
-        sy = syr()
-        return sy.rotation().T @ (pad_middle(l) - sy.pos)
-
-    ref = tcp_local()
-    trim = np.zeros(3)
-    s_cmd, k = 0.0, 0
-    while s_cmd < PULL_L - 1e-9:  # coaxial: along the measured axis, the TCP's drift off that line (in the syringe's
-        # frame) trimmed out each step; 5 mm/s through the fit, then 20 mm/s; travel capped at 45 mm
-        s_cmd = min(PULL_L, s_cmd + (PULL_V0 if s_cmd < PULL_SLOW else PULL_V) * d.DT)
-        off = tcp_local() - ref
-        lat = syr().rotation() @ np.array([0.0, off[1], off[2]])
-        trim = trim - np.clip(PULL_GAIN * lat, -PULL_TRIM, PULL_TRIM)
-        l._solve(c0 + a0 * s_cmd + trim, l.grip.rot)
-        k += 1
-        if env is not None and k % 5 == 0:
-            say(f"cap pull: command {1000 * s_cmd:.1f} mm, TCP off its start in the syringe frame {np.round(1000 * off, 2).tolist()} mm, "
-                f"cap slide {1000 * sense('cap_slide'):.2f} mm, cap_on {T.TRIAL.cap_on}, needle off the barrel's axis "
-                f"{sense('needle_deg'):.2f} deg (max {sense('needle_deg_max'):.2f}), zero {T.TRIAL.zero}")
-        yield
-    l.trim = np.zeros(3)
-    slip_cap = float(np.linalg.norm(in_grip() - g0))
-    poses("cap pulled")
-    off = st("cap").pos - hub()
-    if env is not None and T.TRIAL.cap_on:
-        say("CAP NOT OFF")
-    if spike:
-        gate("cap comes off with a straight pull (6 N at 2.8 mm), needle not bent", not T.TRIAL.cap_on and T.TRIAL.zero is None,
-             f"cap {1000 * float(off @ a0):.1f} mm along the barrel from the hub, zero {T.TRIAL.zero}")
-        gate("syringe pinch holds against the cap pull: slip < 0.5 mm", slip_cap < 0.0005, f"{1000 * slip_cap:.2f} mm")
-        gate("cap pull with the rod free: plunger travel < 0.5 mm, no retraction", abs(travel()) < 0.0005 and not T.TRIAL.retracted,
-             f"{1000 * travel():.2f} mm, retracted {T.TRIAL.retracted}")
-
-    def left_to_cup():
-        yield from l.move(l.at() + [-0.03, 0.05, 0.05], t=1.2, label="left: up and back, away from the needle and the trainer")
-        yield from l.move(np.array([T.CUP_AT[0], T.CUP_AT[1], T.TOP + 0.13]), grip=G_LDROP, t=3.0, label="left: over the cup, fingers forward and down")
-        yield from l.move(l.at(), finger=PRESHAPE_L, t=0.5, label="left: let the cap fall")
-        yield from l.wait(0.6)
-        yield from l.move(l.at() + [0.0, 0.0, 0.05], t=0.8, label="left: up")
-        c = st("cap")
-        cc = T.shape_corners(T.CAP_BODY, c)
-        say(f"cap at {np.round(1000 * c.pos, 1).tolist()} mm, axis {np.round(c.rotation()[:, 0], 3).tolist()}, in the cup "
-            f"{T.in_cup(None, None, cc)} (worst corner {1000 * T.cup_excess(None, None, cc):+.1f} mm past the inside)")
-
-    if mode == "steep":
-        yield from ctx.together(left_to_cup(), carry(P["front"], 3.0, "right: in front of the site"))
-        # turn the barrel 25 deg (yaw) and press the tip on the skin 20 mm below the site: it must not go in
-        yield from place_syringe(P["front"], timeout=1.5, label="right: in front of the site")
-        h0 = hub()
-        yield from r.arc(h0, Z, STEEP_DEG, t=1.5, label="right: turn the barrel 25 deg")
-        a = axis()
-        aim = T.GEOM.site - [0.0, 0.0, 0.020]
-        start = aim - a * (T.NEEDLE_L + 0.015)
-        yield from carry(start, 2.0, "right: the tip 15 mm off the skin, 25 deg")
-        c = ik.tcp_pose(r.q, r.base)[0]
-        for k in range(round(3.0 / d.DT)):  # in at 10 mm/s, travel capped at 22 mm
-            r._solve(c + a * min(0.022, INSERT_V * d.DT * k), r.grip.rot)
+        ref = tcp_local()
+        trim = np.zeros(3)
+        s_cmd, k = 0.0, 0
+        while s_cmd < PULL_L - 1e-9:  # coaxial: along the measured axis, the TCP's drift off that line (in the syringe's
+            # frame) trimmed out each step; 5 mm/s through the fit, then 20 mm/s; travel capped at 45 mm
+            s_cmd = min(PULL_L, s_cmd + (PULL_V0 if s_cmd < PULL_SLOW else PULL_V) * d.DT)
+            off = tcp_local() - ref
+            lat = syr().rotation() @ np.array([0.0, off[1], off[2]])
+            trim = trim - np.clip(PULL_GAIN * lat, -PULL_TRIM, PULL_TRIM)
+            l._solve(c0 + a0 * s_cmd + trim, l.grip.rot)
+            k += 1
+            if env is not None and k % 5 == 0:
+                say(f"cap pull: command {1000 * s_cmd:.1f} mm, TCP off its start in the syringe frame {np.round(1000 * off, 2).tolist()} mm, "
+                    f"cap slide {1000 * sense('cap_slide'):.2f} mm, cap_on {T.TRIAL.cap_on}, needle off the barrel's axis "
+                    f"{sense('needle_deg'):.2f} deg (max {sense('needle_deg_max'):.2f}), zero {T.TRIAL.zero}")
             yield
-        gate("a 25 deg entry does not go in", not T.TRIAL.engaged and not any(p.engaged for p in T.TRIAL.punctures),
-             f"tip force {sense('tip_force'):.2f} N, report {T.TRIAL.report()}")
-        yield from carry(start, 1.5, "right: back off")
-        return
+        l.trim = np.zeros(3)
+        slip_cap = float(np.linalg.norm(in_grip() - g0))
+        poses("cap pulled")
+        off = st("cap").pos - hub()
+        if env is not None and T.TRIAL.cap_on:
+            say("CAP NOT OFF")
+        if spike:
+            gate("cap comes off with a straight pull (6 N at 2.8 mm), needle not bent", not T.TRIAL.cap_on and T.TRIAL.zero is None,
+                 f"cap {1000 * float(off @ a0):.1f} mm along the barrel from the hub, zero {T.TRIAL.zero}")
+            gate("syringe pinch holds against the cap pull: slip < 0.5 mm", slip_cap < 0.0005, f"{1000 * slip_cap:.2f} mm")
+            gate("cap pull with the rod free: plunger travel < 0.5 mm, no retraction", abs(travel()) < 0.0005 and not T.TRIAL.retracted,
+                 f"{1000 * travel():.2f} mm, retracted {T.TRIAL.retracted}")
 
-    # ---- 4. right: to the site (the shoulder's edge read from the scene), square; left drops the cap ----------------
-    def right_to_site():
-        yield from carry(P["front"], 3.0, "right: in front of the site")
-        yield from carry(P["pre"], 1.5, "right: the tip 10 mm off the skin at the site")
-        yield from place_syringe(P["pre"], timeout=2.5, tol=0.0004, label="right: square at the site")
+        def left_to_cup():
+            yield from l.move(l.at() + [-0.03, 0.05, 0.05], t=1.2, label="left: up and back, away from the needle and the trainer")
+            yield from l.move(np.array([T.CUP_AT[0], T.CUP_AT[1], T.TOP + 0.13]), grip=G_LDROP, t=3.0, label="left: over the cup, fingers forward and down")
+            yield from l.move(l.at(), finger=PRESHAPE_L, t=0.5, label="left: let the cap fall")
+            yield from l.wait(0.6)
+            yield from l.move(l.at() + [0.0, 0.0, 0.05], t=0.8, label="left: up")
+            c = st("cap")
+            cc = T.shape_corners(T.CAP_BODY, c)
+            say(f"cap at {np.round(1000 * c.pos, 1).tolist()} mm, axis {np.round(c.rotation()[:, 0], 3).tolist()}, in the cup "
+                f"{T.in_cup(None, None, cc)} (worst corner {1000 * T.cup_excess(None, None, cc):+.1f} mm past the inside)")
 
-    yield from ctx.together(left_to_cup(), right_to_site())
-    poses("at the site")
-    say(f"site from the acromion's edge at z {1000 * (T.GEOM.z_edge - T.TOP):.1f} mm above the table: hub target {np.round(1000 * P['pre'], 1).tolist()}")
+        if mode == "steep":
+            yield from ctx.together(left_to_cup(), carry(P["front"], 3.0, "right: in front of the site"))
+            # turn the barrel 25 deg (yaw) and press the tip on the skin 20 mm below the site: it must not go in
+            yield from place_syringe(P["front"], timeout=1.5, label="right: in front of the site")
+            h0 = hub()
+            yield from r.arc(h0, Z, STEEP_DEG, t=1.5, label="right: turn the barrel 25 deg")
+            a = axis()
+            aim = T.GEOM.site - [0.0, 0.0, 0.020]
+            start = aim - a * (T.NEEDLE_L + 0.015)
+            yield from carry(start, 2.0, "right: the tip 15 mm off the skin, 25 deg")
+            c = ik.tcp_pose(r.q, r.base)[0]
+            for k in range(round(3.0 / d.DT)):  # in at 10 mm/s, travel capped at 22 mm
+                r._solve(c + a * min(0.022, INSERT_V * d.DT * k), r.grip.rot)
+                yield
+            gate("a 25 deg entry does not go in", not T.TRIAL.engaged and not any(p.engaged for p in T.TRIAL.punctures),
+                 f"tip force {sense('tip_force'):.2f} N, report {T.TRIAL.report()}")
+            yield from carry(start, 1.5, "right: back off")
+            return
 
-    # ---- 5. needle in, square, to the hub; the left hand comes round behind meanwhile -----------------------------------
-    def insert():
-        c = ik.tcp_pose(r.q, r.base)[0]
-        cap_x = float(P["skin"][0] - P["pre"][0]) + 0.001  # never more than 1 mm past the skin
-        for k in range(round(6.0 / d.DT)):
-            if env is not None and T.TRIAL.gap is not None and T.TRIAL.gap <= 0.0003:
-                break
-            if env is None and hub()[0] >= P["skin"][0] - 1e-5:
-                break
-            e = P["pre"][1:] - hub()[1:]
-            c = c + np.r_[min(INSERT_V * d.DT, max(0.0, P["pre"][0] + cap_x - hub()[0])), np.clip(0.3 * e, -0.0005, 0.0005)]
-            r._solve(c, r.grip.rot)
-            yield
-        yield from r.wait(0.6)
-        r.trim = np.zeros(3)
-        if env is not None and not T.TRIAL.engaged:
-            say("NEEDLE DID NOT GO IN")
-        poses("needle in")
+        # ---- 4. right: to the site (the shoulder's edge read from the scene), square; left drops the cap ----------------
+        def right_to_site():
+            yield from carry(P["front"], 3.0, "right: in front of the site")
+            yield from carry(P["pre"], 1.5, "right: the tip 10 mm off the skin at the site")
+            yield from place_syringe(P["pre"], timeout=2.5, tol=0.0004, label="right: square at the site")
 
-    l_wait = None
+        yield from ctx.together(left_to_cup(), right_to_site())
+        poses("at the site")
+        say(f"site from the acromion's edge at z {1000 * (T.GEOM.z_edge - T.TOP):.1f} mm above the table: hub target {np.round(1000 * P['pre'], 1).tolist()}")
 
-    def left_behind():
-        nonlocal l_wait
-        thumb = where(T.EDGE0 - T.ROD_BACK, 0.0, -0.004) + (T.GEOM.site[0] - P["pre"][0]) * X
-        l_wait = thumb - TIP_AHEAD * A_LP - 0.030 * X + 0.03 * Y
-        yield from l.move(l_wait + [0.0, 0.03, 0.03], grip=G_LPUSH, finger=d.FINGER_CLOSED, t=3.0, label="left: behind the thumb rest, fingers closed")
-        yield from l.move(l_wait, t=1.0, label="left: level with the thumb rest")
+        # ---- 5. needle in, square, to the hub; the left hand comes round behind meanwhile -----------------------------------
+        def insert():
+            c = ik.tcp_pose(r.q, r.base)[0]
+            cap_x = float(P["skin"][0] - P["pre"][0]) + 0.001  # never more than 1 mm past the skin
+            for k in range(round(6.0 / d.DT)):
+                if env is not None and T.TRIAL.gap is not None and T.TRIAL.gap <= 0.0003:
+                    break
+                if env is None and hub()[0] >= P["skin"][0] - 1e-5:
+                    break
+                e = P["pre"][1:] - hub()[1:]
+                c = c + np.r_[min(INSERT_V * d.DT, max(0.0, P["pre"][0] + cap_x - hub()[0])), np.clip(0.3 * e, -0.0005, 0.0005)]
+                r._solve(c, r.grip.rot)
+                yield
+            yield from r.wait(0.6)
+            r.trim = np.zeros(3)
+            if env is not None and not T.TRIAL.engaged:
+                say("NEEDLE DID NOT GO IN")
+            poses("needle in")
 
-    yield from ctx.together(insert(), left_behind())
-    if spike:
-        gap = T.TRIAL.gap if env is not None else 0.0
-        gate("needle in at 90 deg, the hub on the skin (gap <= 1 mm)", T.TRIAL.engaged and gap is not None and gap <= 0.001 if env is not None else True, f"gap {gap}")
-        gate("no phantom contact before the skin (tip force < 0.2 N off the skin)", sense("phantom") < 0.2, f"{sense('phantom'):.3f} N")
+        l_wait = None
+
+        def left_behind():
+            nonlocal l_wait
+            thumb = where(T.EDGE0 - T.ROD_BACK, 0.0, -0.004) + (T.GEOM.site[0] - P["pre"][0]) * X
+            l_wait = thumb - TIP_AHEAD * A_LP - 0.030 * X + 0.03 * Y
+            yield from l.move(l_wait + [0.0, 0.03, 0.03], grip=G_LPUSH, finger=d.FINGER_CLOSED, t=3.0, label="left: behind the thumb rest, fingers closed")
+            yield from l.move(l_wait, t=1.0, label="left: level with the thumb rest")
+
+        yield from ctx.together(insert(), left_behind())
+        if spike:
+            gap = T.TRIAL.gap if env is not None else 0.0
+            gate("needle in at 90 deg, the hub on the skin (gap <= 1 mm)", T.TRIAL.engaged and gap is not None and gap <= 0.001 if env is not None else True, f"gap {gap}")
+            gate("no phantom contact before the skin (tip force < 0.2 N off the skin)", sense("phantom") < 0.2, f"{sense('phantom'):.3f} N")
 
     # ---- 6. left: onto the thumb rest, then the push: 0.1 mL/s, then through the detent (travel capped) -----------------
     thumb = where(T.EDGE0 - T.ROD_BACK + travel(), 0.0, -0.004)
@@ -444,12 +483,13 @@ def demo_script(ctx):
     yield from l.move(touch - APPROACH_BACK * X, t=1.0, label="left: 3 mm behind the thumb rest")
     g0, h0 = in_grip(), hub()
     c0, tr0 = touch.copy(), travel()
-    # E2: the fingertips met the thumb rest at 12 N within one sample and the arm's stored force shoved the stopper 10 mm.
     # PushCtl approaches at 2 mm/s until the touch (0.3 N), ramps the press until the rule breaks the stopper loose (its
-    # stuck flag: the measured thumb load reached BREAKAWAY_F), lets the arm's stored force go by bringing the command
-    # back to the fingertips (plus a light preload, so the thumb stays on), then pushes at 0.1 mL/s.
-    ctl = PushCtl(tr0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F)
+    # stuck flag: the measured thumb load reached BREAKAWAY_F), and keeps pressing: the push follows a 0.1 mL/s target
+    # from there against the glide and the liquid's resistance, the fingertips on the thumb rest throughout.
+    ctl = PushCtl(tr0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F, PUSH_F=T.F_GLIDE + T.FLOW_C * PUSH_V)
     touched, press_max, rel_at, surge = False, 0.0, None, 0.0
+    push_log = []  # (thumb load N, applied resistance N, travel m) each control step from S to the 0 line
+    x5 = []  # (pushonly) (t, travel, thumb, least thumb in the step, longest time off so far, resistance) from the breakaway
     drift = {}
 
     def drift_hold(label):
@@ -478,7 +518,22 @@ def demo_script(ctx):
         if (env is not None and T.TRIAL.retracted) or (env is None and travel() >= T.RETRACT_AT + 0.0002):
             break
         given = not T.TRIAL.stuck  # the breakaway is the rule's own (its stuck flag), never the stopper's travel
-        l._solve(c0 + X * ctl.step(travel(), sense("thumb") if env is not None else ctx.thumb, given), l.grip.rot)
+        tr_now, th_now = travel(), (sense("thumb") if env is not None else ctx.thumb)
+        l._solve(c0 + X * ctl.step(tr_now, th_now, given), l.grip.rot)
+        if ctl.released and T.TRIAL.t_S is not None and T.TRIAL.t_zero is None:  # S to the 0 line: what the push met
+            push_log.append((th_now, abs(T.TRIAL.plunger_n), tr_now))
+        if pushonly and ctl.released:
+            x5.append((T.TRIAL.t if env is not None else k * d.DT, tr_now, th_now, sense("thumb_lo", th_now), sense("thumb_off_max"), abs(T.TRIAL.plunger_n)))
+            if env is not None:
+                T.SENSE["thumb_lo"] = 1e9
+                if T.volume(tr_now) > 0.9:  # the clause runs from S (the 0.9 line): the time-off record starts there
+                    T.SENSE["thumb_off_max"], T.SENSE["thumb_off_run"] = 0.0, 0.0
+        if env is not None and os.environ.get("INJ_TRACE"):  # one line per control step of the push, for the logs
+            tcp = T.tcp_of(env, "left")
+            rest = where(T.EDGE0 - T.ROD_BACK + tr_now, 0.0, -0.004)
+            print(f"[push] k={k} t={T.TRIAL.t:.3f} {ctl.phase} cmd {1000 * ctl.cmd:.2f} target {1000 * (ctl.target() - ctl.tr0):.2f} "
+                  f"lead {1000 * ctl.lead:.2f} travel {1000 * (tr_now - ctl.tr0):.2f} mm, thumb {th_now:.2f} N, hand {1000 * float((tcp - c0) @ X):.2f} mm, "
+                  f"fingertips to thumb rest {1000 * float((rest - tcp - TIP_LEN * A_LP) @ X):.2f} mm, resistance {T.TRIAL.plunger_n:+.2f} N", flush=True)
         if ctl.phase != "approach" and not touched:
             touched = True
             say(f"left on the thumb rest: travel {1000 * travel():.2f} mm, thumb {sense('thumb'):.2f} N")
@@ -492,7 +547,7 @@ def demo_script(ctx):
                 yield from drift_hold("after the breakaway")
                 surge = drift.get("after the breakaway surge", 0.0)
                 c0, tr0 = c0 + X * (travel() - tr0), travel()  # then the push again from where the stopper is
-                ctl = PushCtl(tr0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F)
+                ctl = PushCtl(tr0, ZERO_TRAVEL=T.ZERO_TRAVEL, TRAVEL_MAX=T.TRAVEL_MAX, DETENT_F=T.DETENT_F, BREAKAWAY_F=T.BREAKAWAY_F, PUSH_F=T.F_GLIDE + T.FLOW_C * PUSH_V)
                 ctl.released = True  # (the stopper is loose: the approach, then straight on to the push)
         elif k - rel_at[0] <= round(0.25 / d.DT) and not spike:
             surge = max(surge, travel() - rel_at[1] - PUSH_V * (k - rel_at[0]) * d.DT)
@@ -511,13 +566,22 @@ def demo_script(ctx):
     else:
         l._solve(c0 + X * (travel() - tr0 + 0.001), l.grip.rot)  # retracted: ease off to 1 mm into the thumb rest
         yield from l.wait(0.5)
+    if push_log:
+        th, res, trv = (np.array(c) for c in zip(*push_log))
+        rate = (trv[-1] - trv[0]) / max(len(trv) - 1, 1) / d.DT
+        say(f"push, S to the 0 line: {len(th)} control steps, stopper at {1000 * rate:.2f} mm/s on average; thumb load mean {th.mean():.2f} N "
+            f"(least {th.min():.2f}, most {th.max():.2f}); applied glide mean {res.mean():.2f} N; glide + flow expected at this "
+            f"rate {T.F_GLIDE + T.FLOW_C * rate:.2f} N")
+    if pushonly:
+        _x5_report(T, x5, say)
+        return
     l.trim = np.zeros(3)
     slip_push = float(np.linalg.norm(in_grip() - g0))
     poses("pushed")
     if spike:
         R = T.TRIAL
         gate("syringe pinch holds against the push: slip < 0.5 mm", slip_push < 0.0005, f"{1000 * slip_push:.2f} mm, hub moved {1000 * np.linalg.norm(hub() - h0):.2f} mm")
-        gate("S: the edge on the first printed graduation below where it stood at the first in-muscle frame", R.t_S is not None,
+        gate("S: the edge on the graduation 0.1 mL below its reading (to the nearest graduation) at the first in-muscle frame", R.t_S is not None,
              f"S {R.t_S}, first in-muscle volume {R.report()['vol_first']}, volume at S {R.vol_S}")
         gate("needle still from S to the retraction (5 deg, 3 mm)", not R.moved, f"largest deviation {R.report()['dev']}")
         gate("continuous in muscle from S to the retraction", R.continuous, f"{R.continuous}")
@@ -534,6 +598,13 @@ def demo_script(ctx):
              "velocity sign flips < 1/s",
              env is None or (gl.sliding_n > 0 and 0.75 * T.F_GLIDE <= gl.mean_sliding() <= 1.25 * T.F_GLIDE and gl.flips < max(gl.t_on, 1.0)),
              f"mean {gl.mean_sliding():.2f} N over {gl.sliding_n} sliding steps, {gl.flips} flips in {gl.t_on:.1f} s")
+        if push_log:
+            th, res, trv = (np.array(c) for c in zip(*push_log))
+            rate = (trv[-1] - trv[0]) / max(len(trv) - 1, 1) / d.DT
+            want = T.F_GLIDE + T.FLOW_C * rate
+            gate("the push met the modelled resistance: the measured thumb load from S to the 0 line within 25% of glide + FLOW_C x rate",
+                 env is None or abs(th.mean() - want) <= 0.25 * want,
+                 f"rate {1000 * rate:.2f} mm/s, thumb {th.mean():.2f} N, expected {want:.2f} N (glide applied {res.mean():.2f} N)")
         n = sense("views", 0)
         gate("both views show the barrel line and the hub or a band in >= 95% of frames, S to retraction",
              n > 0 and sense("views_ok", 0) / n >= 0.95, f"{sense('views_ok', 0)}/{n} (side {sense('side_ok', 0)}, overhead {sense('over_ok', 0)})")

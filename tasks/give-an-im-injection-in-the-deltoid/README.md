@@ -17,8 +17,9 @@ inspect-robots run --embodiment yam_arena --policy dream -E task=im_injection.py
   -E cam_width=320 -E cam_height=176 --scorer task_score --max-steps 3600 --instruction "$(jq -r .instruction task.json)"
 ARENA_DIR=<arena checkout> YAM_EVAL_DIR=<log dir> \
 tools/run_injection.sh inj-full 3600 scripted full 0       # the scripted demo
-tools/run_injection.sh inj-checks 3600 scripted spike      # the demo with the physics checks ([spike] PASS/FAIL lines)
+tools/run_injection.sh inj-phys 3600 scripted spike        # the demo with the physics checks ([spike] PASS/FAIL lines)
 tools/run_injection.sh inj-steep 1200 scripted steep 0     # a 25 deg press must not go in
+tools/run_injection.sh inj-push 560 scripted pushonly 0 INJ_PUSHONLY=1   # the left finger's push alone, barrel held on its rest
 tools/run_injection.sh inj-dream 3600 dream full 0         # a policy (Dream-1) through the bridge
 python -m pytest -q test_im_injection.py                   # scorer, layout, demo reach, clearance, views; no simulator
 ```
@@ -26,8 +27,8 @@ python -m pytest -q test_im_injection.py                   # scorer, layout, dem
 - Trial settings: `INJ_HEIGHT` (0, 1, 2 spacer layers) and `INJ_TRAINER_T` (m, 0.043-0.050) set the trial's height and
   skin x. The real trial follows a fixed rotation: trial k stands on k mod 3 layers of 18.3 mm plywood.
 - Seed and jitter: one seed (0), no object jitter.
-- Runtime: the demo runs about 1,130 control steps (56 s at 20 Hz, inside the 3,600-step run limit), about 6 minutes on
-  one GPU.
+- Runtime: the scripted demo ran 1,120 control steps (56 s at 20 Hz, inside the 3,600-step run limit) and took 14
+  minutes of wall-clock time on one GPU. A policy run uses the full 3,600 steps.
 - Diagnostics: `INJ_TRACE` (a trace every 0.25 s; `run_injection.sh` sets it), `INJ_PROBE` and `INJ_ZERO_WRENCH`. They
   only log or switch applied forces off for diagnosis, and are unset in scored runs.
 - The full-mode run prints a scorer check: the step checks ran, the score before the stow is at most 0.75, and 1.0 after
@@ -63,8 +64,13 @@ number for a visible outcome, it is given here.
 - Full depth, "the hub touches the skin": simulation gap 1 mm or less.
 - Lines and graduations: a line is reached when the stopper's front edge is on or past it. The simulation has no
   tolerance: the edge's volume is at or below the line.
-- S: the edge reaches the first printed 0.1 mL graduation below its place at the first in-muscle frame. From 1.0 mL that
-  is the 0.9 line.
+- S: the edge reaches the graduation 0.1 mL below its reading at the first in-muscle frame, that reading taken to the
+  nearest printed graduation (midway reads up). A 1.0 mL fill reads 1.0 whether the edge sits a hair above or below the
+  line, so S is the 0.9 line: the edge has to travel at least half a graduation (0.05 mL, 0.85 mm) to reach it. S is
+  therefore the start of the push and cannot fire at the insertion with the stopper at rest. A push begun before the hub
+  is on the skin does start S there, and the rest of the insertion then counts against needle still. The first timed
+  interval runs from S to the first 0.2 mL line below the edge at S and is prorated by that volume (from the 0.9
+  line to the 0.8 line: 0.5-2 s).
 - Steady push, from S until the edge reaches the 0 line. All three parts are needed for 1.0:
   - Rate: each 0.2 mL line is reached 1-4 s after the previous one, the first interval (S to the first 0.2 mL line)
     prorated by its volume. 1-4 s is half to twice the taught 10 s per mL (2 s per 0.2 mL).
@@ -72,8 +78,9 @@ number for a visible outcome, it is given here.
     (4 s per 0.2 mL) a graduation is reached every 2 s, and at the taught rate every 1 s. So 3 s, 1.5 times the
     slowest spacing, flags only a stopped plunger.
   - Thumb on: no 3 consecutive side-camera frames show a 2 mm gap between the pushing finger and the thumb rest; frames
-    hiding the thumb rest don't count, and over 1.0 s of them in total means thumb on is not credited. In simulation, the robot's contact load on the plunger under 0.2 N for 0.1 s or more (3 frames
-    at 30 fps) is the thumb off.
+    hiding the thumb rest don't count, and over 1.0 s of them in total means thumb on is not credited. In simulation,
+    the robot's contact load on the plunger under 0.2 N for 0.1 s or more (3 frames at 30 fps) is the thumb off; no
+    frame is hidden for this clause there.
 - Timing ends on the frame the edge reaches the 0 line. The 10 N push through the 0 line's stop (the retraction) and any
   wait before it are not timed.
 - Stowed: the syringe with its plunger rod wholly inside the container below the rim, the cap in the cup, and both
@@ -99,10 +106,18 @@ number for a visible outcome, it is given here.
   measured motion, its position differentiated and low-passed over 20 ms. The solver's velocity of the gripped barrel
   carries an offset with the barrel still, and fed that velocity, the tissue forces drove the stopper.
 - Plunger stiction: a hard stop with 0.2 mm of play, released by the rule when the measured thumb load reaches 3 N.
-- Plunger glide: about 2 N of elasto-plastic friction (0.5 mm presliding), applied as a force on the plunger with the
-  reaction on the barrel. The slide's joint damping (770 N s/m authored) acts at only about 40-75 N s/m on the GPU and
-  could not carry it. After the retraction the glide keeps holding the plunger, in place of the real syringe's
-  lock-down latch.
+- Plunger glide: about 2 N of elasto-plastic friction (0.5 mm presliding), applied as a force pair on the plunger and
+  the barrel. After the retraction the glide keeps holding the plunger, in place of the real syringe's lock-down latch.
+- Liquid through the needle: what makes a real push slow. Hagen-Poiseuille for water (1.0 mPa s) through the 25 G x
+  1 in needle (bore 0.26 mm nominal, 25.4 mm long) from a 59.2 mm2 barrel gives 226 kPa per mL/s: 13.4 N per mL/s on
+  the plunger, 1.3 N at the taught 0.1 mL/s (790 N s/m of stopper speed; 500-1,250 N s/m over the bores ISO 9626 allows
+  a 25 G needle). A push of 3.3 N gives the taught rate, and twice the force about four times the rate, so a light
+  touch cannot run the dose out. It is the plunger joint's damping: the barrel and plunger are one reduced-coordinate
+  articulation (barrel the floating root, one prismatic joint), which the GPU solver integrates exactly. Measured on
+  the GPU with known forces on the stopper and no robot: 1 N does not move it, 2.5 N and 4 N move it at 0.63 and
+  2.53 mm/s (2.00 N + 790 N s/m). As two free bodies on an ordinary joint the same damping acted at under a tenth of
+  its value whenever the barrel was held by contact, and the glide's force pair cancelled. The damping cannot be
+  switched at run time, so it also acts over the detent's 2 mm past the 0 line and on the retracted plunger.
 - 0 line: a stop that gives only to 10 N of thumb load. 2 mm past it the retraction fires and the needle is pulled into
   the barrel.
 - Not simulated: needle bending under load, tearing, dimpling, layered tissue resistance, back-pressure, skin spreading,
@@ -116,8 +131,9 @@ number for a visible outcome, it is given here.
 - Uncapping: at (14, -13, 22) cm, clear of the trainer. The left hand's level fingers pinch the cap from +y and pull it
   45 mm straight along the measured barrel axis, slowly through the fit.
 - Push: the left's closed fingertips meet the thumb rest from 3 mm behind at 2 mm/s, stopping at 0.3 N of measured
-  load. The press then ramps to the 3 N breakaway. At the breakaway the hand eases back to the fingertips, then pushes
-  at 0.1 mL/s, then 2 mm/s through the detent.
+  load. The press then ramps to the 3 N breakaway and the hand keeps pressing: it follows a 0.1 mL/s target against the
+  glide and the liquid's resistance (about 3.3 N on the thumb rest), the fingertips on the thumb rest throughout, then
+  2 mm/s through the detent.
 - The `spike` mode adds physics checks:
   - the grip holding 15 N, the cap pull straight, the breakaway and the steady push;
   - the views, and the retraction;
@@ -139,7 +155,7 @@ See task.json `reset_notes` (about 3 minutes).
 | Flange diameter | 190 mm | Calipers |
 | Graduations from the hub (0 / 1.0 / 2.0 mL) | 10.0 / 26.9 / 43.8 mm | Calipers on a real unit |
 | Cap pull-off | 6 N | Spring scale |
-| Plunger breakaway; glide at 0.1 mL/s | 3 N; 2 N | Spring scale, stopwatch |
+| Plunger breakaway; glide; push force at 0.1 mL/s with water | 3 N; 2 N; 3.3 N | Spring scale on the thumb rest, stopwatch |
 | Retraction (detent) force and travel | 10 N over 2 mm | Spring scale on the thumb rest of a capped unit |
 | Puncture force at 90 deg | engages at 1.0 N | Kitchen scale under the trainer |
 | Syringe mass with 1 mL | 9 g + parts | 0.01 g scale |
@@ -166,8 +182,13 @@ See task.json `reset_notes` (about 3 minutes).
 - CDC, "Administering Vaccines: Dose, Route, Site, and Needle Size" and the IM injection job aid: deltoid site 2-3
   fingerbreadths below the acromion, 90 degrees, 1 in needle for 60-70 kg adults. Paraphrased: the job aid's wording
   could not be checked word for word.
-- Potter & Perry, *Fundamentals of Nursing*, medication administration: deltoid 2.5-5 cm below the acromion process, IM
-  injection at about 10 s/mL. Paraphrased; edition and page not checked.
+- Ernstmeyer K, Christman E (eds.), *Nursing Skills* (Open RN, Chippewa Valley Technical College; CC BY-SA 4.0),
+  section 18.6 "Administering Intramuscular Medications"
+  (https://med.libretexts.org/Bookshelves/Nursing/Nursing_Skills_(OpenRN)/18:_Administration_of_Parenteral_Medications/18.06:_Administering_Intramuscular_Medications,
+  fetched 2026-11-18): the deltoid site "about 1 inch to 2 inches (2.5 cm to 5 cm) below the acromion process";
+  "Intramuscular injections are administered at a 90-degree angle"; "administering medications at 10 seconds per mL is
+  an effective rate for IM injections". The same rate is taught in Perry, Potter et al., *Clinical Nursing Skills and
+  Techniques* (not checked page by page).
 - Prasetyono TOH, Adhistana P. Laboratory study on injection force measurement on syringe and needle combinations.
   Malays J Med Sci 2019;26(2):66-76 (doi 10.21315/mjms2019.26.2.8): a 1 mL syringe's break-loose 0.75-1.15 N and glide
   0.13-0.71 N. The simulation's 3 N / 2 N are a firmer stopper than that.

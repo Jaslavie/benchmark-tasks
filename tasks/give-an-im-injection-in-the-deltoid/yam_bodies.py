@@ -80,6 +80,7 @@ class Body(Box):
     velocity_iterations: int | None = None  # solver velocity iterations (None: PhysX's default)
     gyroscopic: bool | None = None  # PhysX gyroscopic forces (None: the default)
     stabilization: float | None = None  # PhysX stabilization threshold (None: the default)
+    articulation_root: bool = False  # the floating root link of a reduced-coordinate articulation (its `articulated` joints)
 
     @staticmethod
     def build(name: str, pos, shapes, mass: float | None = None, **kw) -> Body:
@@ -152,6 +153,8 @@ class Joint:
     d6_limits: tuple = ()
     break_force: float | None = None
     remake: bool = False
+    articulated: bool = False  # part of the articulation rooted at an `articulation_root` body: solved in reduced
+    # coordinates (its drive is integrated by the solver exactly); never switched at run time or at a reset
 
     @property
     def rebuilt(self) -> bool:
@@ -176,8 +179,8 @@ def revolute_joint(name, body0, body1, anchor, axis="X", limits_deg=None, on=Tru
     return j
 
 
-def prismatic_joint(name, body0, body1, anchor, axis="Z", limits=None, drive=None, on=True) -> Joint:
-    j = Joint(name, "prismatic", body0, body1, tuple(anchor), axis, None, on, limits=limits, drive=drive)
+def prismatic_joint(name, body0, body1, anchor, axis="Z", limits=None, drive=None, on=True, articulated=False) -> Joint:
+    j = Joint(name, "prismatic", body0, body1, tuple(anchor), axis, None, on, limits=limits, drive=drive, articulated=bool(articulated))
     _JOINTS[name] = j
     return j
 
@@ -234,6 +237,7 @@ def _author_joint(stage, prim_path: str, spec: Body, j: Joint, path: str) -> Non
             drive.CreateStiffnessAttr(float(j.drive[0]))
             drive.CreateDampingAttr(float(j.drive[1]))
             drive.CreateTargetPositionAttr(float(j.drive[2]))
+            drive.CreateTargetVelocityAttr(0.0)
             drive.CreateMaxForceAttr(1.0e4)
     if j.kind == "d6":
         if j.drive is not None:
@@ -256,7 +260,7 @@ def _author_joint(stage, prim_path: str, spec: Body, j: Joint, path: str) -> Non
         joint.CreateBreakForceAttr(float(j.break_force))
     joint.CreateJointEnabledAttr(bool(j.on))
     joint.CreateCollisionEnabledAttr(False)
-    joint.CreateExcludeFromArticulationAttr(True)
+    joint.CreateExcludeFromArticulationAttr(not j.articulated)
     _JOINT_ATTR.pop(j.name, None)
 
 
@@ -349,6 +353,14 @@ def _spawn_body(prim_path: str, cfg, translation=None, orientation=None, **kwarg
             rb.CreateEnableGyroscopicForcesAttr(bool(spec.gyroscopic))
         if spec.stabilization is not None:
             rb.CreateStabilizationThresholdAttr(float(spec.stabilization))
+        if spec.articulation_root:  # a floating-base articulation: this body is its root link
+            UsdPhysics.ArticulationRootAPI.Apply(prim)
+            art = PhysxSchema.PhysxArticulationAPI.Apply(prim)
+            art.CreateSolverPositionIterationCountAttr(int(spec.solver_iterations))
+            if spec.velocity_iterations is not None:
+                art.CreateSolverVelocityIterationCountAttr(int(spec.velocity_iterations))
+            art.CreateSleepThresholdAttr(0.0)
+            art.CreateEnabledSelfCollisionsAttr(False)
         if spec.contact_report:
             PhysxSchema.PhysxContactReportAPI.Apply(prim).CreateThresholdAttr(0.0)
         if spec.ignore:
@@ -432,6 +444,10 @@ def push(environment, name: str, force, torque=(0.0, 0.0, 0.0)) -> None:
     reset clears them."""
     import torch
 
+    root = _art_root(name)
+    if root is not None:  # a link of an articulation: its forces go in one call for all its links (_flush_art_forces)
+        _ART_FORCES.setdefault(root, {})[name] = (np.asarray(force, np.float64), np.asarray(torque, np.float64))
+        return
     asset = environment.unwrapped.scene[name]
     f = torch.tensor([[[float(v) for v in force]]], device=asset.device)
     t = torch.tensor([[[float(v) for v in torque]]], device=asset.device)
@@ -440,6 +456,61 @@ def push(environment, name: str, force, torque=(0.0, 0.0, 0.0)) -> None:
 
 
 _PUSHED: set[str] = set()
+_ART_VIEWS: dict[str, object] = {}
+_ART_FORCES: dict[str, dict] = {}  # articulation root body -> {link body: (force, torque), world}
+_ART_LINK: dict[str, dict] = {}  # articulation root body -> {link body: its link index in the articulation view}
+
+
+def _art_root(name: str) -> str | None:
+    """The root body of the articulation ``name`` is a link of (itself, if it is the root), or None for a free body."""
+    for j in _JOINTS.values():
+        if j.articulated and j.body1 == name:
+            return _art_root(j.body0)
+    if any(j.articulated and j.body0 == name for j in _JOINTS.values()):
+        return name
+    return None
+
+
+def _art_view(name: str):
+    from isaaclab_physx.physics import PhysxManager
+
+    if name not in _ART_VIEWS:
+        _ART_VIEWS[name] = PhysxManager.get_physics_sim_view().create_articulation_view(f"{ENV}/{name}/body")
+    return _ART_VIEWS[name]
+
+
+def _flush_art_forces(env) -> None:
+    """Every articulation's link forces and torques (world, at each link's centre of mass) in ONE call per articulation,
+    after each physics step, for the next one. Sent per body through each asset's own rigid-body view, the force on the
+    root link was not delivered (rig finding); PhysX clears applied forces after every step, so this runs every step."""
+    import warp as wp
+
+    base = env.unwrapped
+    dev = str(base.device)
+    for root, forces in _ART_FORCES.items():
+        view = _art_view(root)
+        if root not in _ART_LINK:  # which link is which body: by position, once
+            tf = as_numpy(view.get_link_transforms()).reshape(view.count, view.max_links, 7)[0]
+            origin = as_numpy(base.scene.env_origins[0])
+            idx = {}
+            for body in [root] + [j.body1 for j in _JOINTS.values() if j.articulated and _art_root(j.body1) == root]:
+                p = body_state(env, body).pos + origin
+                d = np.linalg.norm(tf[:, :3] - p, axis=1)
+                idx[body] = int(np.argmin(d))
+                if float(d.min()) > 0.002:
+                    raise RuntimeError(f"articulation '{root}': no link at body '{body}' (nearest {1000 * float(d.min()):.1f} mm away)")
+            if len(set(idx.values())) != len(idx):
+                raise RuntimeError(f"articulation '{root}': bodies share a link index {idx}")
+            _ART_LINK[root] = idx
+            print(f"[yam_bodies] articulation '{root}': {view.count} x {view.max_links} links, {view.max_dofs} joint(s), link of each body {idx}", flush=True)
+        F = np.zeros((view.count, view.max_links, 3), np.float32)
+        Tq = np.zeros((view.count, view.max_links, 3), np.float32)
+        for body, (f, tq) in forces.items():
+            F[0, _ART_LINK[root][body]] = f
+            Tq[0, _ART_LINK[root][body]] = tq
+        view.apply_forces_and_torques_at_position(
+            force_data=wp.array(F.reshape(-1), dtype=wp.float32, device=dev), torque_data=wp.array(Tq.reshape(-1), dtype=wp.float32, device=dev),
+            position_data=None, indices=wp.array(np.arange(view.count, dtype=np.int32), device=dev), is_global=True)
 
 
 # -- contact views ---------------------------------------------------------------------------------------------------
@@ -495,6 +566,7 @@ def _put_back(env) -> None:
     for name in list(_PUSHED):
         base.scene[name].permanent_wrench_composer.reset()
     _PUSHED.clear()
+    _ART_FORCES.clear()
     for name, spec in _SPECS.items():
         if spec.static:
             continue
@@ -503,9 +575,33 @@ def _put_back(env) -> None:
         pose[:, :3] += base.scene.env_origins
         obj.write_root_pose_to_sim_index(root_pose=pose)
         obj.write_root_velocity_to_sim_index(root_velocity=torch.zeros_like(obj.data.default_root_vel.torch))
+    for name, spec in _SPECS.items():  # an articulation's links other than its root cannot be put back by a pose write:
+        if spec.articulation_root:  # the root's pose (written above) and its joints at zero place them
+            _reset_articulation(base, name)
     for j in _JOINTS.values():
+        if j.articulated:
+            continue
         if not j.rebuilt:  # breakable and remake joints are re-made at the reset instead
             set_joint(j.name, j.on)
+
+
+def _reset_articulation(base, name: str) -> None:
+    """The articulation rooted at body ``name``: root at its start pose, at rest, every joint at 0 and still."""
+    import warp as wp
+
+    view = _art_view(name)
+    dev = str(base.device)
+    idx = wp.array(np.arange(view.count, dtype=np.int32), device=dev)
+    obj = base.scene[name]
+    pose = obj.data.default_root_pose.torch.clone()
+    pose[:, :3] += base.scene.env_origins
+    root = np.ascontiguousarray(pose.detach().cpu().numpy().astype(np.float32).reshape(view.count, 7))
+    view.set_root_transforms(wp.array(root.reshape(-1), dtype=wp.float32, device=dev), idx)
+    view.set_root_velocities(wp.array(np.zeros(view.count * 6, np.float32), dtype=wp.float32, device=dev), idx)
+    zeros = wp.array(np.zeros(view.count * view.max_dofs, np.float32), dtype=wp.float32, device=dev)
+    view.set_dof_positions(zeros, idx)
+    view.set_dof_velocities(zeros, idx)
+    print(f"[yam_bodies] articulation '{name}' reset: {view.count} x {view.max_links} links, {view.max_dofs} joint(s) to 0", flush=True)
 
 
 def _remake_breakable() -> None:
@@ -539,6 +635,7 @@ def _wrap_update(env) -> None:
         dt = float(k.get("dt", a[0] if a else env.unwrapped.physics_dt))
         for fn in _SUB:
             fn(env, dt)
+        _flush_art_forces(env)
         return out
 
     scene.update = update_and_sample
@@ -578,6 +675,8 @@ def _patch_embodiment(module) -> None:
         obs = reset(self, *a, **k)
         _remake_breakable()
         for j in _JOINTS.values():  # rebuilt whole where the settled bodies are
+            if j.articulated:
+                continue
             if j.on and not j.rebuilt:
                 set_joint(j.name, False)
                 set_joint(j.name, True)
